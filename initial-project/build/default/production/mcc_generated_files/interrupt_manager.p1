@@ -34,14 +34,14 @@ Version 4.0 HI-TECH Software Intermediate Code
 "586
 [; ;/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h: 586: extern volatile PIR1bits_t PIR1bits __attribute__((address(0x011)));
 [v _PIR1bits `VS40 ~T0 @X0 0 e@17 ]
-[v F6990 `(v ~T0 @X0 0 tf ]
+[v F6992 `(v ~T0 @X0 0 tf ]
 "96 mcc_generated_files/eusart.h
 [; ;mcc_generated_files/eusart.h: 96: extern void (*EUSART_RxDefaultInterruptHandler)(void);
-[v _EUSART_RxDefaultInterruptHandler `*F6990 ~T0 @X0 0 e ]
-[v F6988 `(v ~T0 @X0 0 tf ]
+[v _EUSART_RxDefaultInterruptHandler `*F6992 ~T0 @X0 0 e ]
+[v F6990 `(v ~T0 @X0 0 tf ]
 "95
 [; ;mcc_generated_files/eusart.h: 95: extern void (*EUSART_TxDefaultInterruptHandler)(void);
-[v _EUSART_TxDefaultInterruptHandler `*F6988 ~T0 @X0 0 e ]
+[v _EUSART_TxDefaultInterruptHandler `*F6990 ~T0 @X0 0 e ]
 "55 /opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h
 [; ;/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h: 55: __asm("INDF0 equ 00h");
 [; <" INDF0 equ 00h ;# ">

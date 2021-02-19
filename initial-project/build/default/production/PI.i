@@ -19,34 +19,34 @@ extern double __fpnormalize(double);
 
 
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/xc8debug.h" 1 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/xc8debug.h" 1 3
 
 
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/stdlib.h" 1 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h" 1 3
 
 
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/musl_xc8.h" 1 3
-# 5 "/opt/microchip/xc8/v2.20/pic/include/c99/stdlib.h" 2 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/musl_xc8.h" 1 3
+# 5 "/opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h" 2 3
 
 
 
 
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/features.h" 1 3
-# 11 "/opt/microchip/xc8/v2.20/pic/include/c99/stdlib.h" 2 3
-# 21 "/opt/microchip/xc8/v2.20/pic/include/c99/stdlib.h" 3
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 1 3
-# 18 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/features.h" 1 3
+# 11 "/opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h" 2 3
+# 21 "/opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h" 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 1 3
+# 18 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef long int wchar_t;
-# 122 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 122 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef unsigned size_t;
-# 168 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 168 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef __int24 int24_t;
-# 204 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 204 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef __uint24 uint24_t;
-# 22 "/opt/microchip/xc8/v2.20/pic/include/c99/stdlib.h" 2 3
+# 22 "/opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h" 2 3
 
 int atoi (const char *);
 long atol (const char *);
@@ -98,7 +98,7 @@ uldiv_t uldiv (unsigned long, unsigned long);
 
 
 size_t __ctype_get_mb_cur_max(void);
-# 5 "/opt/microchip/xc8/v2.20/pic/include/c99/xc8debug.h" 2 3
+# 5 "/opt/microchip/xc8/v2.31/pic/include/c99/xc8debug.h" 2 3
 
 
 
@@ -113,21 +113,21 @@ extern void __builtin_software_breakpoint(void);
 
 
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/stdint.h" 1 3
-# 22 "/opt/microchip/xc8/v2.20/pic/include/c99/stdint.h" 3
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 1 3
-# 127 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/stdint.h" 1 3
+# 22 "/opt/microchip/xc8/v2.31/pic/include/c99/stdint.h" 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 1 3
+# 127 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef unsigned long uintptr_t;
-# 142 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 142 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef long intptr_t;
-# 158 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 158 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef signed char int8_t;
 
 
 
 
 typedef short int16_t;
-# 173 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 173 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef long int32_t;
 
 
@@ -135,7 +135,7 @@ typedef long int32_t;
 
 
 typedef long long int64_t;
-# 188 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 188 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef long long intmax_t;
 
 
@@ -148,7 +148,7 @@ typedef unsigned char uint8_t;
 
 
 typedef unsigned short uint16_t;
-# 209 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 209 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef unsigned long uint32_t;
 
 
@@ -156,9 +156,9 @@ typedef unsigned long uint32_t;
 
 
 typedef unsigned long long uint64_t;
-# 229 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 229 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef unsigned long long uintmax_t;
-# 23 "/opt/microchip/xc8/v2.20/pic/include/c99/stdint.h" 2 3
+# 23 "/opt/microchip/xc8/v2.31/pic/include/c99/stdint.h" 2 3
 
 typedef int8_t int_fast8_t;
 
@@ -169,6 +169,7 @@ typedef int8_t int_least8_t;
 typedef int16_t int_least16_t;
 
 typedef int24_t int_least24_t;
+typedef int24_t int_fast24_t;
 
 typedef int32_t int_least32_t;
 
@@ -184,17 +185,18 @@ typedef uint8_t uint_least8_t;
 typedef uint16_t uint_least16_t;
 
 typedef uint24_t uint_least24_t;
+typedef uint24_t uint_fast24_t;
 
 typedef uint32_t uint_least32_t;
 
 typedef uint64_t uint_least64_t;
-# 139 "/opt/microchip/xc8/v2.20/pic/include/c99/stdint.h" 3
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/stdint.h" 1 3
-typedef int32_t int_fast16_t;
+# 144 "/opt/microchip/xc8/v2.31/pic/include/c99/stdint.h" 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/stdint.h" 1 3
+typedef int16_t int_fast16_t;
 typedef int32_t int_fast32_t;
-typedef uint32_t uint_fast16_t;
+typedef uint16_t uint_fast16_t;
 typedef uint32_t uint_fast32_t;
-# 140 "/opt/microchip/xc8/v2.20/pic/include/c99/stdint.h" 2 3
+# 145 "/opt/microchip/xc8/v2.31/pic/include/c99/stdint.h" 2 3
 # 5 "/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/builtins.h" 2 3
 
 
@@ -11199,10 +11201,10 @@ void PIN_MANAGER_IOC(void);
 # 51 "./mcc_generated_files/mcc.h" 2
 
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/stdbool.h" 1 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/stdbool.h" 1 3
 # 53 "./mcc_generated_files/mcc.h" 2
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/conio.h" 1 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/conio.h" 1 3
 
 
 
@@ -11210,12 +11212,12 @@ void PIN_MANAGER_IOC(void);
 
 
 
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/errno.h" 1 3
-# 10 "/opt/microchip/xc8/v2.20/pic/include/c99/errno.h" 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/errno.h" 1 3
+# 12 "/opt/microchip/xc8/v2.31/pic/include/c99/errno.h" 3
 extern int errno;
-# 9 "/opt/microchip/xc8/v2.20/pic/include/c99/conio.h" 2 3
+# 9 "/opt/microchip/xc8/v2.31/pic/include/c99/conio.h" 2 3
 # 1 "/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/__null.h" 1 3
-# 10 "/opt/microchip/xc8/v2.20/pic/include/c99/conio.h" 2 3
+# 10 "/opt/microchip/xc8/v2.31/pic/include/c99/conio.h" 2 3
 
 
 extern void init_uart(void);
@@ -11238,9 +11240,9 @@ extern void cputs(const char *);
 
 # 1 "./mcc_generated_files/eusart.h" 1
 # 57 "./mcc_generated_files/eusart.h"
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/stdio.h" 1 3
-# 24 "/opt/microchip/xc8/v2.20/pic/include/c99/stdio.h" 3
-# 1 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 1 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/stdio.h" 1 3
+# 24 "/opt/microchip/xc8/v2.31/pic/include/c99/stdio.h" 3
+# 1 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 1 3
 
 
 
@@ -11252,14 +11254,14 @@ typedef void * va_list[1];
 
 
 typedef void * __isoc_va_list[1];
-# 137 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 137 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef long ssize_t;
-# 246 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 246 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef long long off_t;
-# 399 "/opt/microchip/xc8/v2.20/pic/include/c99/bits/alltypes.h" 3
+# 399 "/opt/microchip/xc8/v2.31/pic/include/c99/bits/alltypes.h" 3
 typedef struct _IO_FILE FILE;
-# 25 "/opt/microchip/xc8/v2.20/pic/include/c99/stdio.h" 2 3
-# 52 "/opt/microchip/xc8/v2.20/pic/include/c99/stdio.h" 3
+# 25 "/opt/microchip/xc8/v2.31/pic/include/c99/stdio.h" 2 3
+# 52 "/opt/microchip/xc8/v2.31/pic/include/c99/stdio.h" 3
 typedef union _G_fpos64_t {
  char __opaque[16];
  double __align;

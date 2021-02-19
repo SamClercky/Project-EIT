@@ -61,7 +61,7 @@ void main(void) {
     }*/
     
     while (1) {
-        printf("1\n");
+        printf("hallo Werel\r\n");
         __delay_ms(2000);
     }
 }

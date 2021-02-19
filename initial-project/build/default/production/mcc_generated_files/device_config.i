@@ -10,7 +10,7 @@
 # 50 "mcc_generated_files/device_config.c"
 #pragma config FEXTOSC = OFF
 #pragma config RSTOSC = HFINT32
-#pragma config CLKOUTEN = OFF
+#pragma config CLKOUTEN = ON
 #pragma config CSWEN = ON
 #pragma config FCMEN = ON
 

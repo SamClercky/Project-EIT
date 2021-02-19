@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=initial-project
+PROJECTNAME=curiosity-tests.X
 
 # Active Configuration
 DEFAULTCONF=default

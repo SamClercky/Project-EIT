@@ -53,8 +53,8 @@
   Section: Macro Declarations
 */
 
-#define EUSART_TX_BUFFER_SIZE 8
-#define EUSART_RX_BUFFER_SIZE 8
+#define EUSART_TX_BUFFER_SIZE 64
+#define EUSART_RX_BUFFER_SIZE 64
 
 /**
   Section: Global Variables
@@ -94,8 +94,8 @@ void EUSART_Initialize(void)
     EUSART_SetTxInterruptHandler(EUSART_Transmit_ISR);
     // Set the EUSART module to the options selected in the user interface.
 
-    // ABDOVF no_overflow; SCKP Inverted; BRG16 16bit_generator; WUE disabled; ABDEN disabled; 
-    BAUD1CON = 0x18;
+    // ABDOVF no_overflow; SCKP Non-Inverted; BRG16 16bit_generator; WUE disabled; ABDEN disabled; 
+    BAUD1CON = 0x08;
 
     // SPEN enabled; RX9 8-bit; CREN enabled; ADDEN disabled; SREN disabled; 
     RC1STA = 0x90;
