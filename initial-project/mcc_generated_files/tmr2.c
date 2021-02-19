@@ -63,8 +63,8 @@ void TMR2_Initialize(void)
 {
     // Set TMR2 to the options selected in the User Interface
 
-    // PR2 255; 
-    PR2 = 0xFF;
+    // PR2 49; 
+    PR2 = 0x31;
 
     // TMR2 0; 
     TMR2 = 0x00;
@@ -72,8 +72,8 @@ void TMR2_Initialize(void)
     // Clearing IF flag.
     PIR1bits.TMR2IF = 0;
 
-    // T2CKPS 1:1; T2OUTPS 1:1; TMR2ON on; 
-    T2CON = 0x04;
+    // T2CKPS 1:4; T2OUTPS 1:1; TMR2ON on; 
+    T2CON = 0x05;
 }
 
 void TMR2_StartTimer(void)
