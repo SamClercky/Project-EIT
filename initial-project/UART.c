@@ -4,7 +4,7 @@
 
 #include <xc.h>
 #include "mcc_generated_files/mcc.h"
-#include "PI.h"
+//#include "PI.h"
 #include <stdlib.h> //for atoi and atof functions
 #include <ctype.h> //for toupper command
 
@@ -25,9 +25,9 @@ static int printCycle = 0;
 
 void Java(void) {
     //Write to JAVA
-    if (printCycle > 10) {
-        sensorHeight = PI_GetSensorHeight();
-        printf("%d", sensorHeight); // data naar com poort printen
+    if (printCycle > 10000) {
+        //sensorHeight = PI_GetSensorHeight();
+        printf("\r\n%d", sensorHeight); // data naar com poort printen
         printf(">"); // stop teken
         printCycle = 0;
     }
@@ -51,15 +51,15 @@ void Java(void) {
         switch (command) {
             case 'S': //Setpoint                            
                 setpoint = atoi(value); //atoi = ASCII to integer
-                PI_SetSetpoint(setpoint);
+                //PI_SetSetpoint(setpoint);
                 break;
             case 'P': //Proportional                           
                 kp = (float) atof(value); //atof = ASCII to float
-                PI_SetKp(kp);
+                //PI_SetKp(kp);
                 break;
             case 'I': //Integrate                                           
                 ki = (float) atof(value);
-                PI_SetKi(ki);
+                //PI_SetKi(ki);
                 break;
         };
     }

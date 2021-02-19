@@ -1,7 +1,7 @@
 Version 4.0 HI-TECH Software Intermediate Code
 [p mainexit ]
-"71 ./mcc_generated_files/mcc.h
-[; ;./mcc_generated_files/mcc.h: 71: void SYSTEM_Initialize(void);
+"72 ./mcc_generated_files/mcc.h
+[; ;./mcc_generated_files/mcc.h: 72: void SYSTEM_Initialize(void);
 [v _SYSTEM_Initialize `(v ~T0 @X0 0 ef ]
 "358 /opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h
 [; ;/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h: 358:     struct {
@@ -14,12 +14,15 @@ Version 4.0 HI-TECH Software Intermediate Code
 "365
 [; ;/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h: 365: extern volatile INTCONbits_t INTCONbits __attribute__((address(0x00B)));
 [v _INTCONbits `VS30 ~T0 @X0 0 e@11 ]
-"111 /opt/microchip/xc8/v2.31/pic/include/c99/stdio.h
-[v _printf `(i ~T0 @X0 0 ev`*Cuc ]
-[v F183 `(v ~T0 @X0 1 tf1`ul ]
-"12 /opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/builtins.h
-[v __delay `JF183 ~T0 @X0 0 e ]
-[p i __delay ]
+"325 ./mcc_generated_files/tmr2.h
+[; ;./mcc_generated_files/tmr2.h: 325: _Bool TMR2_HasOverflowOccured(void);
+[v _TMR2_HasOverflowOccured `(a ~T0 @X0 0 ef ]
+"103
+[; ;./mcc_generated_files/tmr2.h: 103: void TMR2_Initialize(void);
+[v _TMR2_Initialize `(v ~T0 @X0 0 ef ]
+"10 ./UART.h
+[; ;./UART.h: 10:     void Java(void);
+[v _Java `(v ~T0 @X0 0 ef ]
 "55 /opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h
 [; ;/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h: 55: __asm("INDF0 equ 00h");
 [; <" INDF0 equ 00h ;# ">
@@ -1095,25 +1098,31 @@ Version 4.0 HI-TECH Software Intermediate Code
 "36
 [; ;main.c: 36:     (INTCONbits.PEIE = 1);
 [e = . . _INTCONbits 0 2 -> -> 1 `i `uc ]
-"63
-[; ;main.c: 63:     while (1) {
+"53
+[; ;main.c: 53:     while (1) {
 [e :U 970 ]
 {
-"64
-[; ;main.c: 64:         printf("hallo Wereld\r\n");
-[e ( _printf :s 1C ]
-"65
-[; ;main.c: 65:         _delay((unsigned long)((2000)*(32000000/4000.0)));
-[e ( __delay (1 -> * -> -> 2000 `i `d / -> -> 32000000 `l `d .4000.0 `ul ]
-"66
-[; ;main.c: 66:     }
+"55
+[; ;main.c: 55:         if (TMR2_HasOverflowOccured()) {
+[e $ ! != -> ( _TMR2_HasOverflowOccured ..  `i -> 0 `i 972  ]
+{
+"56
+[; ;main.c: 56:             TMR2_Initialize();
+[e ( _TMR2_Initialize ..  ]
+"59
+[; ;main.c: 59:             Java();
+[e ( _Java ..  ]
+"60
+[; ;main.c: 60:         }
+}
+[e :U 972 ]
+"61
+[; ;main.c: 61:     }
 }
 [e :U 969 ]
 [e $U 970  ]
 [e :U 971 ]
-"67
-[; ;main.c: 67: }
+"62
+[; ;main.c: 62: }
 [e :UE 968 ]
 }
-[p f _printf 8388608 ]
-[a 1C 104 97 108 108 111 32 87 101 114 101 108 100 13 10 0 ]

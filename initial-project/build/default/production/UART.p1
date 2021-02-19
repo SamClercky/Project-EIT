@@ -1,7 +1,4 @@
 Version 4.0 HI-TECH Software Intermediate Code
-"12 ./PI.h
-[; ;./PI.h: 12:     int PI_GetSensorHeight(void);
-[v _PI_GetSensorHeight `(i ~T0 @X0 0 ef ]
 "111 /opt/microchip/xc8/v2.31/pic/include/c99/stdio.h
 [v _printf `(i ~T0 @X0 0 ev`*Cuc ]
 "214 ./mcc_generated_files/eusart.h
@@ -20,18 +17,9 @@ Version 4.0 HI-TECH Software Intermediate Code
 "23 /opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h
 [; ;/opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h: 23: int atoi (const char *);
 [v _atoi `(i ~T0 @X0 0 ef1`*Cuc ]
-"14 ./PI.h
-[; ;./PI.h: 14:     void PI_SetSetpoint(int value);
-[v _PI_SetSetpoint `(v ~T0 @X0 0 ef1`i ]
-"26 /opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h
+"26
 [; ;/opt/microchip/xc8/v2.31/pic/include/c99/stdlib.h: 26: double atof (const char *);
 [v _atof `(d ~T0 @X0 0 ef1`*Cuc ]
-"16 ./PI.h
-[; ;./PI.h: 16:     void PI_SetKp(float value);
-[v _PI_SetKp `(v ~T0 @X0 0 ef1`f ]
-"18
-[; ;./PI.h: 18:     void PI_SetKi(float value);
-[v _PI_SetKi `(v ~T0 @X0 0 ef1`f ]
 "55 /opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h
 [; ;/opt/microchip/mplabx/v5.45/packs/Microchip/PIC16F1xxxx_DFP/1.5.133/xc8/pic/include/proc/pic16f18345.h: 55: __asm("INDF0 equ 00h");
 [; <" INDF0 equ 00h ;# ">
@@ -1128,14 +1116,11 @@ Version 4.0 HI-TECH Software Intermediate Code
 [e :U _Java ]
 [f ]
 "28
-[; ;UART.c: 28:     if (printCycle > 10) {
-[e $ ! > _printCycle -> 10 `i 969  ]
+[; ;UART.c: 28:     if (printCycle > 10000) {
+[e $ ! > _printCycle -> 10000 `i 969  ]
 {
-"29
-[; ;UART.c: 29:         sensorHeight = PI_GetSensorHeight();
-[e = _sensorHeight ( _PI_GetSensorHeight ..  ]
 "30
-[; ;UART.c: 30:         printf("%d", sensorHeight);
+[; ;UART.c: 30:         printf("\r\n%d", sensorHeight);
 [e ( _printf , (. :s 1C _sensorHeight ]
 "31
 [; ;UART.c: 31:         printf(">");
@@ -1217,9 +1202,6 @@ Version 4.0 HI-TECH Software Intermediate Code
 "53
 [; ;UART.c: 53:                 setpoint = atoi(value);
 [e = _setpoint ( _atoi (1 -> &U _value `*Cuc ]
-"54
-[; ;UART.c: 54:                 PI_SetSetpoint(setpoint);
-[e ( _PI_SetSetpoint (1 _setpoint ]
 "55
 [; ;UART.c: 55:                 break;
 [e $U 977  ]
@@ -1229,9 +1211,6 @@ Version 4.0 HI-TECH Software Intermediate Code
 "57
 [; ;UART.c: 57:                 kp = (float) atof(value);
 [e = _kp -> ( _atof (1 -> &U _value `*Cuc `f ]
-"58
-[; ;UART.c: 58:                 PI_SetKp(kp);
-[e ( _PI_SetKp (1 _kp ]
 "59
 [; ;UART.c: 59:                 break;
 [e $U 977  ]
@@ -1241,9 +1220,6 @@ Version 4.0 HI-TECH Software Intermediate Code
 "61
 [; ;UART.c: 61:                 ki = (float) atof(value);
 [e = _ki -> ( _atof (1 -> &U _value `*Cuc `f ]
-"62
-[; ;UART.c: 62:                 PI_SetKi(ki);
-[e ( _PI_SetKi (1 _ki ]
 "63
 [; ;UART.c: 63:                 break;
 [e $U 977  ]
@@ -1266,5 +1242,5 @@ Version 4.0 HI-TECH Software Intermediate Code
 [e :UE 968 ]
 }
 [p f _printf 8388736 ]
-[a 1C 37 100 0 ]
+[a 1C 13 10 37 100 0 ]
 [a 2C 62 0 ]

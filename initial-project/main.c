@@ -17,7 +17,7 @@
 #include <string.h>
 #include <stdint.h>
 //#include "PI.h"
-//#include "UART.h"
+#include "UART.h"
 
 /*
                          Main application
@@ -45,24 +45,19 @@ void main(void) {
     // threshold instellen voor signaal met de potentiometer. 
     // richtwaarden tussen: 9000 - 18900
     
-    /*adc_result_t threshold = ADC_GetConversion(Potentiometer); //potentiometer
-    //int threshold = 18900;
-    //int threshold = 8600;
-    ADC_Start(threshold);
+    //adc_result_t threshold = ADC_GetConversion(Potentiometer); //potentiometer
+    ////int threshold = 18900;
+    ////int threshold = 8600;
+    //ADC_Start(threshold);
 
     while (1) {
         // loop moet op een vaste frequentie lopen voor de integrator
-        if (TMR0_HasOverflowOccured()) {
-            TMR0_Initialize();
+        if (TMR2_HasOverflowOccured()) {
+            TMR2_Initialize();
 
-            PI();
+            //PI();
             Java();
         }
-    }*/
-    
-    while (1) {
-        printf("hallo Werel\r\n");
-        __delay_ms(2000);
     }
 }
 
