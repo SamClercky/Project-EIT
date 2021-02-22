@@ -11,12 +11,13 @@
  *          RC1 = motor output
  */
 
+#include "mcc_generated_files/adc.h"
 #include "mcc_generated_files/mcc.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdint.h>
-//#include "PI.h"
+#include "PI.h"
 #include "UART.h"
 
 /*
@@ -44,10 +45,12 @@ void main(void) {
     
     // threshold instellen voor signaal met de potentiometer. 
     // richtwaarden tussen: 9000 - 18900
-    
-    //adc_result_t threshold = ADC_GetConversion(Potentiometer); //potentiometer
-    ////int threshold = 18900;
-    ////int threshold = 8600;
+
+	ADC_Initialize();
+
+    //adc_result_t threshold = ADC_GetConversion(HOOGTE_METER); //potentiometer
+    //int threshold = 18900;
+    //int threshold = 8600;
     //ADC_Start(threshold);
 
     while (1) {
@@ -55,7 +58,7 @@ void main(void) {
         if (TMR2_HasOverflowOccured()) {
             TMR2_Initialize();
 
-            //PI();
+            PI();
             Java();
         }
     }
