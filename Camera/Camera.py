@@ -20,7 +20,7 @@ kernel = np.ones((5, 5), np.uint8)
 
 
 def draw_contours(Mask,colour):
-    text=str(colour[1])
+    text=str(colour[1] + "balls")
     # print(text)
     #why use .copy()?
     #RETR_EXTERNAL segt welke contours worden bijgehouden in dit geval alle child contours worden weggelaten
@@ -35,7 +35,9 @@ def draw_contours(Mask,colour):
         # Get the radius of the enclosing circle around the found contour
         ((x, y), radius) = cv2.minEnclosingCircle(cnt)
         # Draw the circle around the contour
-        cv2.circle(frame, (int(x), int(y)), int(radius), colour[0], 2)
+        cv2.circle(frame, (int(x-radius/2), int(y)), int(radius/2), colour[0], 2)
+        cv2.circle(frame, (int(x+radius/2), int(y)), int(radius/2), colour[0], 2)
+        cv2.rectangle(frame, (int(x-radius/4), int(y-radius*2)), (int(x+radius/4), int(y)), colour[0], 2)
         # Get the moments to calculate the center of the contour
         M = cv2.moments(cnt)
         center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
