@@ -12,6 +12,7 @@ import time
 yellow=[[0,255,255],'yellow']
 blue = [[255, 0, 0],'blue']
 positions = []
+velocity = []
 t0 = time.monotonic()
 
 
@@ -80,12 +81,19 @@ while True:
     cv2.putText(frame, "test", (100,100), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
+    x0 = (0,0,t0)
     for x in positions:
         pos = (x[0],x[1])
         cv2.circle(frame, pos, 5 , (0,255,255), 2)
-        text = (pos,x[2])
+        if(len(positions) > 1):
+            dt = x[2] - x0[2]
+            xv =((x[0] - x0[0])/dt , (x[1] - x0[1])/dt)
+            velocity.append(xv)
+            text = (pos, velocity[positions.index(x) - 1], x[2])
+            x0 = x
+        else:
+            text = (pos, "XXX" ,x[2])
         print(str(text))
-
         cv2.putText(frame, str(text) , pos, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
         print(len(positions))
 
@@ -93,6 +101,7 @@ while True:
 
     if cv2.waitKey(1) & 0xFF == ord(' '):
         positions = []
+        velocity = []
         t0 = time.monotonic()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
