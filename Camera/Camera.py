@@ -6,10 +6,13 @@ Created on Fri Feb 19 13:22:00 2021
 """
 import numpy as np
 import cv2
+import time
 
 #defenitie van geel we moeten enkel geel uit de feed halen omdat we met een tennisbal werken
 yellow=[[0,255,255],'yellow']
 blue = [[255, 0, 0],'blue']
+positions = []
+t0 = time.monotonic()
 
 
 cap = cv2.VideoCapture(0)
@@ -17,6 +20,7 @@ cap = cv2.VideoCapture(0)
 print("ik ben iets aan het doen")
 
 kernel = np.ones((5, 5), np.uint8)
+
 
 
 def draw_contours(Mask,colour):
@@ -34,6 +38,8 @@ def draw_contours(Mask,colour):
         cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
         # Get the radius of the enclosing circle around the found contour
         ((x, y), radius) = cv2.minEnclosingCircle(cnt)
+        positions.append((int(x), int(y), time.monotonic() - t0))
+
         # Draw the circle around the contour
         cv2.circle(frame, (int(x-radius/2), int(y)), int(radius/2), colour[0], 2)
         cv2.circle(frame, (int(x+radius/2), int(y)), int(radius/2), colour[0], 2)
@@ -71,9 +77,23 @@ while True:
     draw_contours(blue_mask, blue)
     # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
 
+    cv2.putText(frame, "test", (100,100), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (255, 255, 255), 2, cv2.LINE_AA)
+
+    for x in positions:
+        pos = (x[0],x[1])
+        cv2.circle(frame, pos, 5 , (0,255,255), 2)
+        text = (pos,x[2])
+        print(str(text))
+
+        cv2.putText(frame, str(text) , pos, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+        print(len(positions))
+
     cv2.imshow("Ik ben ook maar een persoon",frame)
 
-
+    if cv2.waitKey(1) & 0xFF == ord(' '):
+        positions = []
+        t0 = time.monotonic()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
