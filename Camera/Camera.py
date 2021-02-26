@@ -68,42 +68,37 @@ def get_velocity():
     #print("amount of points = " + str(amountOfPoints) + ", len positions = " + str(len(positions)))
     for i in range(amountOfPoints-1, len(positions)-1):
         print(i)
-        if (i > -1):
+        if (i > -1) & (positions[i+1][2] - positions[i][2] > 10^(-5)):
+            dt = positions[i + 1][2] - positions[i][2]
             pos = (positions[i-1][0], positions[i-1][1])
 
             dx = positions[i+1][0] - positions[i][0]
             dy = positions[i+1][1] - positions[i][1]
-            dt = positions[i+1][2] - positions[i][2]
             xv = (pos, dx / dt, dy / dt)
 
             velocity.append(xv)
 
             amountOfPoints = len(positions)
-
+    i = 0
+    gem = (0,0)
     for x in velocity:
+        gem = (gem[0] + x[1] , gem[1]+ x[2])
+        i = i+1
         cv2.circle(frame,x[0],5,(0,255,255),2)
 
-    if len(velocity) > 0 :
+    if len(velocity) > 0:
         cv2.putText(frame, "vx = " + str(round_up(velocity[-1][1])), (100, 90), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (255, 255, 255), 2, cv2.LINE_AA)
         cv2.putText(frame, "vy = " + str(round_up(velocity[-1][2])), (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
                 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+
+        gem = (gem[0] / i, gem[1] / i)
+        cv2.putText(frame, "gem. vx = " + str(round_up(gem[0])), (100, 70), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(frame, "gem. vy = " + str(round_up(gem[1] )), (100, 80), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
     #print(velocity)
 
-    #for x in positions:
-    #    pos = (x[0], x[1])
-    #    cv2.circle(frame, pos, 5, (0, 255, 255), 2)
-    #    if (len(positions) > 1):
-    #        dt = x[2] - x0[2]
-    #        xv = ((x[0] - x0[0]) / dt, (x[1] - x0[1]) / dt)
-    #        velocity.append(xv)
-    #        text = (pos, velocity[positions.index(x) - 1], x[2])
-    #        x0 = x
-    #    else:
-    #        text = (pos, "XXX", x[2])
-    #    print(str(text))
-    #    cv2.putText(frame, str(text), pos, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-    #    print(len(positions))
 
 
 while True:
