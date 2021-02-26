@@ -12,6 +12,7 @@ import math
 #defenitie van geel we moeten enkel geel uit de feed halen omdat we met een tennisbal werken
 yellow=[[0,255,255],'yellow']
 blue = [[255, 0, 0],'blue']
+green = [[0, 255, 0],"green"]
 positions = []
 amountOfPoints = len(positions)
 velocity = []
@@ -108,8 +109,8 @@ while True:
     cv2.imshow("Ik ben ook maar een persoon (gray)", hsv_frame)
 
     # Blue color
-    low_blue = np.array([94, 80, 2])
-    high_blue = np.array([126, 255, 255])
+    low_blue = np.array([40, 52, 72])
+    high_blue = np.array([102, 255, 255])
     blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
     blue_mask = cv2.erode(blue_mask, kernel, iterations=2)
     cv2.imshow("blue mask_1", blue_mask)
