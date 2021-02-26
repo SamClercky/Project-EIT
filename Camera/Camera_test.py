@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 19 13:22:00 2021
 
-@author: Ramses
-"""
 import numpy as np
 import cv2
 import time
@@ -121,7 +116,7 @@ while True:
     draw_contours(blue_mask, blue)
     # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
 
-    get_velocity()
+    #get_velocity()
 
 
     cv2.imshow("Ik ben ook maar een persoon",frame)
@@ -134,5 +129,3 @@ while True:
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
-
