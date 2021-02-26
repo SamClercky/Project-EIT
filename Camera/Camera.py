@@ -7,11 +7,13 @@ Created on Fri Feb 19 13:22:00 2021
 import numpy as np
 import cv2
 import time
+import math
 
 #defenitie van geel we moeten enkel geel uit de feed halen omdat we met een tennisbal werken
 yellow=[[0,255,255],'yellow']
 blue = [[255, 0, 0],'blue']
 positions = []
+amountOfPoints = len(positions)
 velocity = []
 t0 = time.monotonic()
 
@@ -51,12 +53,57 @@ def draw_contours(Mask,colour):
 
         centroid = str(center)
 
-        cv2.putText(frame, centroid, center, cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
+        #v2.putText(frame, centroid, center, cv2.FONT_HERSHEY_SIMPLEX,
+        #            0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         # write a text to frame
-        cv2.putText(frame, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.9, colour[0], 2, cv2.LINE_AA)
+        #cv2.putText(frame, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
+        #            0.9, colour[0], 2, cv2.LINE_AA)
+def round_up(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.ceil(n * multiplier) / multiplier
+
+def get_velocity():
+    global amountOfPoints
+    #print("amount of points = " + str(amountOfPoints) + ", len positions = " + str(len(positions)))
+    for i in range(amountOfPoints-1, len(positions)-1):
+        print(i)
+        if (i > -1):
+            pos = (positions[i-1][0], positions[i-1][1])
+
+            dx = positions[i+1][0] - positions[i][0]
+            dy = positions[i+1][1] - positions[i][1]
+            dt = positions[i+1][2] - positions[i][2]
+            xv = (pos, dx / dt, dy / dt)
+
+            velocity.append(xv)
+
+            amountOfPoints = len(positions)
+
+    for x in velocity:
+        cv2.circle(frame,x[0],5,(0,255,255),2)
+
+    if len(velocity) > 0 :
+        cv2.putText(frame, "vx = " + str(round_up(velocity[-1][1])), (100, 90), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(frame, "vy = " + str(round_up(velocity[-1][2])), (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (255, 255, 255), 2, cv2.LINE_AA)
+    #print(velocity)
+
+    #for x in positions:
+    #    pos = (x[0], x[1])
+    #    cv2.circle(frame, pos, 5, (0, 255, 255), 2)
+    #    if (len(positions) > 1):
+    #        dt = x[2] - x0[2]
+    #        xv = ((x[0] - x0[0]) / dt, (x[1] - x0[1]) / dt)
+    #        velocity.append(xv)
+    #        text = (pos, velocity[positions.index(x) - 1], x[2])
+    #        x0 = x
+    #    else:
+    #        text = (pos, "XXX", x[2])
+    #    print(str(text))
+    #    cv2.putText(frame, str(text), pos, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+    #    print(len(positions))
 
 
 while True:
@@ -78,29 +125,14 @@ while True:
     draw_contours(blue_mask, blue)
     # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
 
-    cv2.putText(frame, "test", (100,100), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (255, 255, 255), 2, cv2.LINE_AA)
+    get_velocity()
 
-    x0 = (0,0,t0)
-    for x in positions:
-        pos = (x[0],x[1])
-        cv2.circle(frame, pos, 5 , (0,255,255), 2)
-        if(len(positions) > 1):
-            dt = x[2] - x0[2]
-            xv =((x[0] - x0[0])/dt , (x[1] - x0[1])/dt)
-            velocity.append(xv)
-            text = (pos, velocity[positions.index(x) - 1], x[2])
-            x0 = x
-        else:
-            text = (pos, "XXX" ,x[2])
-        print(str(text))
-        cv2.putText(frame, str(text) , pos, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-        print(len(positions))
 
     cv2.imshow("Ik ben ook maar een persoon",frame)
 
     if cv2.waitKey(1) & 0xFF == ord(' '):
         positions = []
+        amountOfPoints = len(positions)
         velocity = []
         t0 = time.monotonic()
 
