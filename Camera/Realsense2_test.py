@@ -1,5 +1,4 @@
 
-
 import pyrealsense2 as rs
 import numpy as np
 import cv2
@@ -7,8 +6,10 @@ import time
 import math
 
 
-got_target = False
-green = [[0, 255, 0],"green"]
+
+
+green = [[0, 255, 0] ,"green"]
+points0 = []
 positions = []
 amountOfPoints = len(positions)
 velocity = []
@@ -24,21 +25,15 @@ config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
 profile = pipeline.start(config)
 
-def get_target():
-    global got_target
-
-    #code voor target
-
-    got_target = True
-
 kernel = np.ones((5, 5), np.uint8)
 
-def draw_contours(Mask,colour):
-    text=str(colour[1] + "balls")
+
+def draw_contours(Mask, colour):
+    text = str(colour[1] + "balls")
     # print(text)
-    #why use .copy()?
-    #RETR_EXTERNAL segt welke contours worden bijgehouden in dit geval alle child contours worden weggelaten
-    #CHAIN_APPROX_SIMPLE zegt hoeveel punten bewaard worden voor elke contour in dit geval enkel de uiterste punten
+    # why use .copy()?
+    # RETR_EXTERNAL segt welke contours worden bijgehouden in dit geval alle child contours worden weggelaten
+    # CHAIN_APPROX_SIMPLE zegt hoeveel punten bewaard worden voor elke contour in dit geval enkel de uiterste punten
     (cnts, _) = cv2.findContours(Mask.copy(),
                                  cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -58,70 +53,73 @@ def draw_contours(Mask,colour):
         center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
         diepte = (depth_image[center[1]][center[0]])
 
-
-
         centroid = str(center)
 
-        cv2.putText(color_image, centroid, (100 ,100), cv2.FONT_HERSHEY_SIMPLEX,
+        cv2.putText(color_image, centroid, (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 2, cv2.LINE_AA)
         cv2.putText(color_image, str(diepte), (100, 150), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         # write a text to frame
-        #cv2.putText(color_image, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
+        # cv2.putText(color_image, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
         #            0.9, colour[0], 2, cv2.LINE_AA)
+
 
 def round_up(n, decimals=0):
     multiplier = 10 ** decimals
     return math.ceil(n * multiplier) / multiplier
 
+
 def get_velocity():
     global amountOfPoints
-    #print("amount of points = " + str(amountOfPoints) + ", len positions = " + str(len(positions)))
-    for i in range(amountOfPoints-1, len(positions)-1):
+    # print("amount of points = " + str(amountOfPoints) + ", len positions = " + str(len(positions)))
+    for i in range(amountOfPoints - 1, len(positions) - 1):
         print(i)
-        if (i > -1) & (positions[i+1][2] - positions[i][2] > 10^(-5)):
+        if (i > -1) & (positions[i + 1][2] - positions[i][2] > 10 ^ (-5)):
             dt = positions[i + 1][2] - positions[i][2]
-            pos = (positions[i-1][0], positions[i-1][1])
+            pos = (positions[i - 1][0], positions[i - 1][1])
 
-            dx = positions[i+1][0] - positions[i][0]
-            dy = positions[i+1][1] - positions[i][1]
+            dx = positions[i + 1][0] - positions[i][0]
+            dy = positions[i + 1][1] - positions[i][1]
             xv = (pos, dx / dt, dy / dt)
 
             velocity.append(xv)
 
             amountOfPoints = len(positions)
     i = 0
-    gem = (0,0)
+    gem = (0, 0)
     for x in velocity:
-        gem = (gem[0] + x[1] , gem[1]+ x[2])
-        i = i+1
-        #tekenen van gele cirkels op traject
-        #cv2.circle(color_image,x[0],5,(0,255,255),2)
+        gem = (gem[0] + x[1], gem[1] + x[2])
+        i = i + 1
+        # tekenen van gele cirkels op traject
+        # cv2.circle(color_image,x[0],5,(0,255,255),2)
 
     if len(velocity) > 0:
         cv2.putText(color_image, "vx = " + str(round_up(velocity[-1][1])), (100, 90), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
         cv2.putText(color_image, "vy = " + str(round_up(velocity[-1][2])), (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
         gem = (gem[0] / i, gem[1] / i)
         cv2.putText(color_image, "gem. vx = " + str(round_up(gem[0])), (100, 70), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 2, cv2.LINE_AA)
-        cv2.putText(color_image, "gem. vy = " + str(round_up(gem[1] )), (100, 80), cv2.FONT_HERSHEY_SIMPLEX,
+        cv2.putText(color_image, "gem. vy = " + str(round_up(gem[1])), (100, 80), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 2, cv2.LINE_AA)
-    #print(velocity)
+    # print(velocity)
+
+
+
 
 
 try:
     while True:
+
         frames = pipeline.wait_for_frames()
 
         depth_frame = frames.get_depth_frame()
         color_frame = frames.get_color_frame()
 
         depth_image = np.asanyarray(depth_frame.get_data())
-
 
         color_image = np.asanyarray(color_frame.get_data())
 
@@ -136,18 +134,18 @@ try:
         high_green = np.array([102, 255, 255])
         green_mask = cv2.inRange(hsv_frame, low_green, high_green)
         green_mask = cv2.erode(green_mask, kernel, iterations=2)
-        #cv2.imshow("blue mask_1", green_mask)
+        # cv2.imshow("blue mask_1", green_mask)
         green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
-        #cv2.imshow("blue mask_2", green_mask)
+        # cv2.imshow("blue mask_2", green_mask)
         green_mask = cv2.dilate(green_mask, kernel, iterations=1)
-        #cv2.imshow("blue mask_3", green_mask)
-        draw_contours(green_mask, green)
+        # cv2.imshow("blue mask_3", green_mask)
+
         # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
 
-        #get_velocity()
+        # get_velocity()
 
-        if got_target == False:
-            get_target()
+
+        draw_contours(green_mask, green)
 
         cv2.imshow("Depth Image", depth_colormap)
         cv2.imshow("Color Image", color_image)

@@ -14,7 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 # sources:
 # https://stackoverflow.com/questions/53698635/how-to-define-a-plane-with-3-points-and-plot-it-in-3d
 
-points = points0, points1 = [[[5, 6, 10], [13, 20, 22], [100, 150, 50]], [[20, 100, 40], [60, 18, 35], [50, 33, 26]]]
+points = points0, points1 = [[[0, 6, 15], [10, 60, 90], [0, 150, 50]], [[150, 100, 40], [70,40,35], [50, 33, 26]]]
 
 plt3d = plt.figure().gca(projection='3d')
 plt.xlabel("X axis")
@@ -59,7 +59,7 @@ for i in range(0, 2):
         b =(g - a*k)/h
         c = y0 - a*x0*x0 - b*x0
 
-        for j in range(0, 200):
+        for j in range(0, 200 , 25):
             x.append(j)
             y.append(a * j * j + b * j + c)
             z.append((-normal[0] * j - normal[1] * (a * j * j + b * j + c) - d) * 1. / normal[2])

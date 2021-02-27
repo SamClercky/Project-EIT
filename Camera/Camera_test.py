@@ -4,6 +4,9 @@ import cv2
 import time
 import math
 
+import matplotlib.pyplot as plt
+getting_data = True
+
 #defenitie van geel we moeten enkel geel uit de feed halen omdat we met een tennisbal werken
 yellow=[[0,255,255],'yellow']
 blue = [[255, 0, 0],'blue']
@@ -97,7 +100,7 @@ def get_velocity():
 
 
 
-while True:
+while getting_data:
     _, frame = cap.read()
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -122,6 +125,10 @@ while True:
     cv2.imshow("Ik ben ook maar een persoon",frame)
 
     if cv2.waitKey(1) & 0xFF == ord(' '):
+        getting_data = False
+
+
+    if cv2.waitKey(1) & 0xFF == ord('r'):
         positions = []
         amountOfPoints = len(positions)
         velocity = []
