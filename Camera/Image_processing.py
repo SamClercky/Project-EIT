@@ -9,12 +9,12 @@ import math
 import matplotlib.pyplot as plt
 
 
-class STATE():
+class STATE:
 
-    def __init__(self, startstate):
+    def __init__(self, start_state):
 
         self.states = "getting_target", "getting_data", "analyzing_data"
-        self.current_state = self.states[self.states.index(startstate)]
+        self.current_state = self.states[self.states.index(start_state)]
 
     def cycle(self):
 
@@ -26,11 +26,8 @@ class STATE():
 
 state = STATE("getting_target")
 
-getting_data = True
-got_target = False
-
 green = [[0, 255, 0], "green"]
-points0 = []
+target_points = []
 positions = []
 amountOfPoints = len(positions)
 velocity = []
@@ -49,7 +46,7 @@ kernel = np.ones((5, 5), np.uint8)
 
 
 def get_target(Mask, colour):
-    global points0
+    global target_points
 
     (cnts, _) = cv2.findContours(Mask.copy(),
                                  cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -57,7 +54,7 @@ def get_target(Mask, colour):
         cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
         ((x, y), radius) = cv2.minEnclosingCircle(cnt)
 
-        points0.append([int(x), int(y)])
+        target_points.append([int(x), int(y)])
         cv2.putText(color_image, "Point found", (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
@@ -78,10 +75,8 @@ def get_target(Mask, colour):
 
     # code voor target
     point0 = [50, 50, 50]
-    if len(points0) == 3:
+    if len(target_points) == 3:
         state.cycle()
-
-
 
 def draw_contours(Mask, colour):
     text = str(colour[1] + "balls")
@@ -123,6 +118,37 @@ def round_up(n, decimals=0):
     multiplier = 10 ** decimals
     return math.ceil(n * multiplier) / multiplier
 
+def vect_AB(p0, p1):
+
+    x0, y0, z0 = p0
+    x1, y1, z1 = p1
+
+    return [x1 - x0, y1 - y0, z1 - z0]
+
+def cross_product(u, v):
+
+    ux, uy, uz = u
+    vx, vy, vz = v
+
+    uXv = [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]
+
+    return uXv
+
+def quadratic_constants(points):
+    p0, p1, p2 = points
+    x0, y0, z0 = p0
+    x1, y1, z1 = p1
+    x2, y2, z2 = p2
+
+    g = y1 - y0
+    k = x1 * x1 - x0 * x0
+    h = x1 - x0
+
+    a = ((y2 - y0) * h - x2 * g + x0 * g) / (x2 * x2 * h - x2 * k - x0 * x0 * h + x0 * k)
+    b = (g - a * k) / h
+    c = y0 - a * x0 * x0 - b * x0
+
+    return a, b, c
 
 def get_velocity():
     global amountOfPoints
@@ -161,70 +187,73 @@ def get_velocity():
                     0.5, (255, 255, 255), 2, cv2.LINE_AA)
     # print(velocity)
 
-
-def procces_data():
-    # selecting 3 points for calculation
-    i = len(positions)
-    if i % 2 == 0:
-        points1 = [positions[i - 1], positions[i], positions[i + 1]]
-    else:
-        i = (i - 1) / 2
-        points1 = [positions[i - 1], positions[i], positions[i + 1]]
-
-    # plotting the target plane the plane of the trow and the trajectory of the trow
-
-    points = points0, points1
+def planes_quadratic_intersect(target_points, trajectory_points):
 
     plt3d = plt.figure().gca(projection='3d')
     plt.xlabel("X axis")
     plt.ylabel("Y axis")
 
-    for i in range(0, 2):
-        print(i)
-        p0, p1, p2 = points[i]
-        x0, y0, z0 = p0
-        x1, y1, z1 = p1
-        x2, y2, z2 = p2
+    p0, p1, p2 = target_points
+    q0, q1, q2 = trajectory_points
+    x_coo = []
+    y_coo = []
+    z_coo = []
+    for i in target_points:
+        x_coo.append(i[0])
+        y_coo.append(i[1])
+        z_coo.append(i[2])
+    for i in trajectory_points:
+        x_coo.append(i[0])
+        y_coo.append(i[1])
+        z_coo.append(i[2])
 
-        u = ux, uy, uz = [x1 - x0, y1 - y0, z1 - z0]
-        v = vx, vy, vz = [x2 - x0, y2 - y0, z2 - z0]
+    plt3d.scatter3D(x_coo, y_coo, z_coo, color="purple")
 
-        uXv = [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]
+    point0 = np.array(p0)
+    normal0 = np.array(cross_product(vect_AB(p0, p1), vect_AB(p0, p2)))
 
-        point = np.array(p0)
-        normal = np.array(uXv)
+    d0 = -point0.dot(normal0)
 
-        d = -point.dot(normal)
+    xx0, yy0 = np.meshgrid(range(max(x_coo)), range(max(y_coo)))
 
-        xx, yy = np.meshgrid(range(200), range(200))
+    zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
 
-        zz = (-normal[0] * xx - normal[1] * yy - d) * 1. / normal[2]
+    plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
 
-        plt3d.plot_surface(xx, yy, zz, color="blue", alpha=0.15)
 
-        if i == 1:
 
-            z = []
-            x = []
-            y = []
+    # y = ax^2 + bx + c
+    a, b, c = quadratic_constants(trajectory_points)
 
-            g = y1 - y0
-            k = x1 * x1 - x0 * x0
-            h = x1 - x0
+    point1 = np.array(q0)
+    normal1 = np.array(cross_product(vect_AB(q0, q1), vect_AB(q0, q2)))
 
-            a = ((y2 - y0) * h - x2 * g + x0 * g) / (x2 * x2 * h - x2 * k - x0 * x0 * h + x0 * k)
-            b = (g - a * k) / h
-            c = y0 - a * x0 * x0 - b * x0
+    d1 = -point1.dot(normal1)
 
-            for j in range(0, 200):
-                x.append(j)
-                y.append(a * j * j + b * j + c)
-                z.append((-normal[0] * j - normal[1] * (a * j * j + b * j + c) - d) * 1. / normal[2])
-            plt3d.scatter3D(x, y, z, color="green", alpha=0.3)
-            plt3d.scatter3D((x0, x1, x2), (y0, y1, y2), (z0, z1, z2), color="blue")
+    #plotting quadratic function
+    z = []
+    x = []
+    y = []
+    for j in range(min(x_coo)-10, max(x_coo)+10 , 10):
+        x.append(j)
+        y.append(a * j * j + b * j + c)
+        z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
+
+    plt3d.scatter3D(x, y, z, color="red", alpha= 0.3)
 
     plt.show()
 
+def procces_data():
+    # selecting 3 points for calculation
+    i = len(positions)
+    if i % 2 == 0:
+        trajectory_points = [positions[i - 1], positions[i], positions[i + 1]]
+    else:
+        i = (i - 1) / 2
+        trajectory_points = [positions[i - 1], positions[i], positions[i + 1]]
+
+    # plotting the target plane the plane of the trow and the trajectory of the trow
+    planes_quadratic_intersect(target_points, trajectory_points)
 
 try:
     while True:
