@@ -15,7 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 # https://stackoverflow.com/questions/53698635/how-to-define-a-plane-with-3-points-and-plot-it-in-3d
 
 
-target_points = [[70, 800, 100], [150, 1200, -150], [0, 150, 50]]
+target_points = [[0, -20, 100], [0, 20, -150], [10, 150, 50]]
 trajectory_points = [[150, 222, 100], [-10, 40, 35], [50, 33, 26]]
 
 plt3d = plt.figure().gca(projection='3d')
