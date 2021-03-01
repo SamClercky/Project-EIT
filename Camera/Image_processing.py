@@ -150,6 +150,17 @@ def quadratic_constants(points):
 
     return a, b, c
 
+def afstand_punt_vlak(normal, d, point):
+    # afstand = | ap + bq + cr + d | / √(a2 + b2 + c2).
+    teller = 0
+    noemer = 0
+    for i in range(0,len(normal)):
+        teller = teller + normal[i] * point[i]
+        noemer = noemer + point[i] * point[i]
+    teller = teller + d
+
+    return abs(teller)/math.sqrt(noemer)
+
 def get_velocity():
     global amountOfPoints
     # print("amount of points = " + str(amountOfPoints) + ", len positions = " + str(len(positions)))
@@ -238,7 +249,10 @@ def planes_quadratic_intersect(target_points, trajectory_points):
         x.append(j)
         y.append(a * j * j + b * j + c)
         z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
-
+        if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 1000):
+            print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
+            print(x[-1], y[-1], z[-1])
+            plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
     plt3d.scatter3D(x, y, z, color="red", alpha= 0.3)
 
     plt.show()
