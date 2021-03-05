@@ -16,8 +16,8 @@ import math
 # https://stackoverflow.com/questions/53698635/how-to-define-a-plane-with-3-points-and-plot-it-in-3d
 
 
-target_points = [[0, -20, 100], [0, 20, -150], [10, 150, 50]]
-trajectory_points = [[150, 222, 100], [-10, 40, 35], [50, 33, 26]]
+target_points = [[0, -20, 100], [0, 20, -150], [-60, 150, 50]]
+trajectory_points = [[150, 222, 300], [-10, 40, 35], [50, -600, 26]]
 
 plt3d = plt.figure().gca(projection='3d')
 plt.xlabel("X axis")
@@ -66,6 +66,28 @@ def afstand_punt_vlak(normal, d, point):
 
     return abs(teller)/math.sqrt(noemer)
 
+
+def Newton(normal0, d0, normal1, d1, qc):
+    print("Newton")
+    x = 1
+    y = 1
+    z = 1
+    f1 = normal0[0]*x + normal0[2]*y + normal0[2] * z - d0
+    dxf1 = normal0[0]
+    dyf1 = normal0[1]
+    dzf1 = normal0[2]
+    f2 = normal1[0]*x + normal1[2]*y + normal1[2] * z - d1
+    dxf1 = normal1[0]
+    dyf1 = normal1[1]
+    dzf1 = normal1[2]
+    f3 = qc[0] * x * x + qc[1] * x + qc[2] - y
+    dxf3 = 2*qc[0] * x + qc[1]
+    dyf3 = -1
+    dzf3 = 0
+
+    #return x,y,z
+
+
 def planes_quadratic_intersect(target_points, trajectory_points):
 
     p0, p1, p2 = target_points
@@ -98,20 +120,21 @@ def planes_quadratic_intersect(target_points, trajectory_points):
 
 
     # y = ax^2 + bx + c
-    a, b, c = quadratic_constants(trajectory_points)
+    qc = quadratic_constants(trajectory_points)
+    a, b, c = qc
 
     point1 = np.array(q0)
     normal1 = np.array(cross_product(vect_AB(q0, q1), vect_AB(q0, q2)))
 
     d1 = -point1.dot(normal1)
 
-
+    Newton(normal0, d0, normal1, d1, qc)
 
     #plotting quadratic function
     z = []
     x = []
     y = []
-    for j in range(min(x_coo)-10, max(x_coo)+10 , 1):
+    for j in range(min(x_coo)-100, max(x_coo)+100 , 1):
         x.append(j)
         y.append(a * j * j + b * j + c)
         z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])

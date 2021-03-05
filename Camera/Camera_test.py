@@ -16,6 +16,13 @@ amountOfPoints = len(positions)
 velocity = []
 t0 = time.monotonic()
 
+target_point1 = []
+target_point2 = []
+target_point3 = []
+target_points = [target_point1, target_point2, target_point3]
+
+
+
 
 cap = cv2.VideoCapture(0)
 
@@ -26,8 +33,7 @@ kernel = np.ones((5, 5), np.uint8)
 
 
 def draw_contours(Mask,colour):
-    text=str(colour[1] + "balls")
-    # print(text)
+    text=str(colour[1] + "ballz")
     #why use .copy()?
     #RETR_EXTERNAL segt welke contours worden bijgehouden in dit geval alle child contours worden weggelaten
     #CHAIN_APPROX_SIMPLE zegt hoeveel punten bewaard worden voor elke contour in dit geval enkel de uiterste punten
@@ -36,28 +42,32 @@ def draw_contours(Mask,colour):
 
     # look for any contours
     if len(cnts) > 0:
-        # Sort the contours using area and find the largest one
-        cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
-        # Get the radius of the enclosing circle around the found contour
-        ((x, y), radius) = cv2.minEnclosingCircle(cnt)
-        positions.append((int(x), int(y), time.monotonic() - t0))
+        cntss = sorted(cnts, key=cv2.contourArea, reverse=True)
+        for i in range(0, len(cntss)):
+            if i < 3:
+                cnt = cntss[i]
+                # Get the radius of the enclosing circle around the found contour
+                ((x, y), radius) = cv2.minEnclosingCircle(cnt)
+                target_points[i].append((int(x), int(y)))
 
-        # Draw the circle around the contour
-        cv2.circle(frame, (int(x-radius/2), int(y)), int(radius/2), colour[0], 2)
-        cv2.circle(frame, (int(x+radius/2), int(y)), int(radius/2), colour[0], 2)
-        cv2.rectangle(frame, (int(x-radius/4), int(y-radius*2)), (int(x+radius/4), int(y)), colour[0], 2)
-        # Get the moments to calculate the center of the contour
-        M = cv2.moments(cnt)
-        center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+                # Draw the circle around the contour
+                cv2.circle(frame, (int(x-radius/2), int(y)), int(radius/2), colour[0], 2)
+                cv2.circle(frame, (int(x+radius/2), int(y)), int(radius/2), colour[0], 2)
+                cv2.rectangle(frame, (int(x-radius/4), int(y-radius*2)), (int(x+radius/4), int(y)), colour[0], 2)
+                # Get the moments to calculate the center of the contour
+                M = cv2.moments(cnt)
+                center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
 
-        centroid = str(center)
+                centroid = str(center)
 
-        #v2.putText(frame, centroid, center, cv2.FONT_HERSHEY_SIMPLEX,
-        #            0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(frame, centroid, center, cv2.FONT_HERSHEY_SIMPLEX,
+                            0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
-        # write a text to frame
-        #cv2.putText(frame, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
-        #            0.9, colour[0], 2, cv2.LINE_AA)
+                # write a text to frame
+                #cv2.putText(frame, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
+                #            0.9, colour[0], 2, cv2.LINE_AA)
+            else:
+                break
 def round_up(n, decimals=0):
     multiplier = 10 ** decimals
     return math.ceil(n * multiplier) / multiplier
@@ -99,6 +109,28 @@ def get_velocity():
     #print(velocity)
 
 
+def finalyzing_target():
+    global target_points
+    n = min(len(target_point1), len(target_point2), len(target_point3))
+    #print(n)
+    gem1 = [0, 0]
+    gem2 = [0, 0]
+    gem3 = [0, 0]
+    gem = [gem1, gem2, gem3]
+    for i in range(0, n):
+        #print(i)
+        for j in range(0, 3):
+            #print(i , j)
+            gem[j][0] = gem[j][0] + target_points[j][i][0]
+            gem[j][1] = gem[j][1] + target_points[j][i][1]
+    for i in range(0, len(gem)):
+        gem[i][0] = gem[i][0] / n
+        gem[i][1] = gem[i][1] / n
+
+
+    target_points = gem
+    print(target_points)
+
 
 while getting_data:
     _, frame = cap.read()
@@ -107,15 +139,13 @@ while getting_data:
     cv2.imshow("Ik ben ook maar een persoon (gray)", hsv_frame)
 
     # Blue color
-    low_blue = np.array([40, 52, 72])
-    high_blue = np.array([102, 255, 255])
+    low_blue = np.array([94, 80, 2])
+    high_blue = np.array([126, 255, 255])
     blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
     blue_mask = cv2.erode(blue_mask, kernel, iterations=2)
-    cv2.imshow("blue mask_1", blue_mask)
     blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
-    cv2.imshow("blue mask_2", blue_mask)
     blue_mask = cv2.dilate(blue_mask, kernel, iterations=1)
-    cv2.imshow("blue mask_3",blue_mask)
+    cv2.imshow("blue_mask", blue_mask)
     draw_contours(blue_mask, blue)
     # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
 
@@ -126,6 +156,8 @@ while getting_data:
 
     if cv2.waitKey(1) & 0xFF == ord(' '):
         getting_data = False
+        finalyzing_target()
+        break
 
 
     if cv2.waitKey(1) & 0xFF == ord('r'):
