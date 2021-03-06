@@ -40,7 +40,9 @@ target_point2 = []
 target_point3 = []
 target_points = [target_point1, target_point2, target_point3]
 
-trajectory_points = []
+trajectory_points = np.array()
+
+intersection = []
 
 pipeline = rs.pipeline()
 
@@ -305,7 +307,7 @@ def Newton(normal0, d0, normal1, d1, qc):
     plt.xlabel("itarations")
     plt.ylabel("error")
     plt.plot(itarations_store, error_store)
-    return X
+    return X.transpose
 
     #return x,y,z
 
@@ -386,7 +388,9 @@ def planes_quadratic_intersect(target_points, trajectory_points):
             plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
     plt3d.plot(x, y, z, color="red", alpha= 0.3)
 
-    X  = Newton(normal0, d0, normal1, d1, qc)
+    global intersection
+    intersection = Newton(normal0, d0, normal1, d1, qc)
+
 
     plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
 
@@ -419,10 +423,10 @@ def procces_data():
     planes_quadratic_intersect(target_points, trajectory_points)
 
 def get_distace_to_intersect():
-    d0 = 0
-    d1 = 1
-    d2 = 2
-    return d0, d1, d2
+    d = []
+    for i in range(0, 3):
+        d.append(math.sqrt((target_points[i][0] - intersection[0])*(target_points[i][0] - intersection[0]) + (target_points[i][1] - intersection[1])*(target_points[i][1] - intersection[1]) + (target_points[i][2] - intersection[2])*(target_points[i][2] - intersection[2])))
+    return d
 
 def draw_positions():
     #dit werkt niet meer omdat er alleen 3d punten opgeslagen worden
