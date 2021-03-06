@@ -68,14 +68,13 @@ def afstand_punt_vlak(normal, d, point):
 
 def Newton(normal0, d0, normal1, d1, qc):
     print("Newton")
-    X = np.array([[1, 200, 100]])
+    global X
+    X = np.array([[1000, 1000, 1000]])
     X = X.transpose()
-    print(X)
-    print(X[0][0])
-    print(X[1][0])
-    print(X[2][0])
-
-
+    #print(X)
+    #print(X[0][0])
+    #print(X[1][0])
+    #print(X[2][0])
 
     #X[0][0] = x
     #X[0][1] = y
@@ -92,12 +91,21 @@ def Newton(normal0, d0, normal1, d1, qc):
     #dxf3 = 2*qc[0] * x + qc[1]
     #dyf3 = -1
     #dzf3 = 0
-    itarations_store = []
+
+    iterations_store = []
     error_store = []
+    plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='o', )
+
     i = 0
-    while i < 30:
+    n = 30
+    while i < n:
+        #print(i)
+        #print(X)
+        if i > 1:
+            plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='.', alpha= (1/n)*i)
         i = i+1
-        itarations_store.append(i)
+        iterations_store.append(i)
+        F = []
         F = np.array([[normal0[0]*X[0][0] + normal0[1]*X[1][0] + normal0[2] * X[2][0] - d0,
                        normal1[0]*X[0][0] + normal1[1]*X[1][0] + normal1[2] * X[2][0] - d1,
                        qc[0] * X[0][0] * X[0][0] + qc[1] * X[0][0] + qc[2] - X[1][0]]])
@@ -107,15 +115,16 @@ def Newton(normal0, d0, normal1, d1, qc):
                       [normal1[0], normal1[1], normal1[2]],
                       [2*qc[0] * X[0][0] + qc[1], -1, 0]])
         X = X - np.linalg.inv(J).dot(F)
+
     print(X)
     plt.figure()
     plt.legend("newton rapsody for calculating intersection")
     plt.xlabel("itarations")
     plt.ylabel("error")
-    plt.plot(itarations_store, error_store)
+    plt.plot(iterations_store, error_store)
     plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
 
-    #return x,y,z
+
 
 
 def planes_quadratic_intersect(target_points, trajectory_points):
@@ -144,45 +153,50 @@ def planes_quadratic_intersect(target_points, trajectory_points):
         y_coo.append(i[1])
         z_coo.append(i[2])
 
+    plt3d.set_xlim3d(min(x_coo), max(x_coo))
+    plt3d.set_ylim3d(min(y_coo), max(y_coo))
+    plt3d.set_zlim3d(min(z_coo), max(z_coo))
+
+    plt3d.plot_trisurf([x_coo[0], x_coo[1], x_coo[2]], [y_coo[0], y_coo[1], y_coo[2]], [z_coo[0], z_coo[1], z_coo[2]], alpha= 0.3)
+    plt3d.plot_trisurf([x_coo[3], x_coo[4], x_coo[5]], [y_coo[3], y_coo[4], y_coo[5]], [z_coo[3], z_coo[4], z_coo[5]], color = "red",  alpha= 0.3)
+
     plt3d.scatter3D(x_coo, y_coo, z_coo, color="purple")
 
+    #target equation and plane
     point0 = np.array(p0)
     normal0 = np.array(cross_product(vect_AB(p0, p1), vect_AB(p0, p2)))
-
     d0 = -point0.dot(normal0)
-
-    xx0, yy0 = np.meshgrid(range(max(x_coo)+100), range(max(y_coo)+100))
-
-    zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
-
-    plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
-
-
+    #xx0, yy0 = np.meshgrid(range(max(x_coo)+1000), range(max(y_coo)+1000))
+    #zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
+    #plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
 
     # y = ax^2 + bx + c
     qc = quadratic_constants(trajectory_points)
     a, b, c = qc
 
+    #trajectory equation and plane
     point1 = np.array(q0)
     normal1 = np.array(cross_product(vect_AB(q0, q1), vect_AB(q0, q2)))
-
     d1 = -point1.dot(normal1)
-    xx1, yy1 = np.meshgrid(range(max(x_coo)), range(max(y_coo)))
+    #xx1, yy1 = np.meshgrid(range(max(x_coo)+1000), range(max(y_coo)+1000))
+    #zz1 = (-normal1[0] * xx1 - normal1[1] * yy1 - d1) * 1. / normal1[2]
+    #plt3d.plot_surface(xx1, yy1, zz1, color="red", alpha=0.15)
 
-    zz1 = (-normal1[0] * xx1 - normal1[1] * yy1 - d1) * 1. / normal1[2]
-
-    plt3d.plot_surface(xx1, yy1, zz1, color="red", alpha=0.15)
-
-    Newton(normal0, d0, normal1, d1, qc)
+    Newton(normal0, d0, normal1, d1, qc, )
 
     #plotting quadratic function
     z = []
     x = []
     y = []
+    print(min(x_coo)-10, max(x_coo)+10)
     for j in range(min(x_coo)-10, max(x_coo)+10 , 1):
         x.append(j)
         y.append(a * j * j + b * j + c)
         z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
+        if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 5000):
+            #print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
+            #print(x[-1], y[-1], z[-1])
+            plt3d.scatter3D(x[-1], y[-1], z[-1], color="green", marker='x', )
 
 
     plt3d.plot(x, y, z, color="red")
@@ -190,6 +204,4 @@ def planes_quadratic_intersect(target_points, trajectory_points):
 
 planes_quadratic_intersect(target_points, trajectory_points)
 
-plt.show(block = False)
-plt.pause(3)
-plt.close()
+plt.show()

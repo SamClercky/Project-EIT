@@ -1,6 +1,4 @@
 
-
-
 import pyrealsense2 as rs
 import numpy as np
 import cv2
@@ -58,8 +56,9 @@ profile = pipeline.start(config)
 depth_profile = rs.video_stream_profile(profile.get_stream(rs.stream.depth))
 depth_intrinsics = depth_profile.get_intrinsics()
 
-
 kernel = np.ones((5, 5), np.uint8)
+
+plt3d = plt.figure().gca(projection='3d')
 
 
 
@@ -262,51 +261,61 @@ def get_velocity():
 
 def Newton(normal0, d0, normal1, d1, qc):
     print("Newton")
-    X = np.array([[1, 200, 100]])
+    global X
+    X = np.array([[1000, 1000, 1000]])
     X = X.transpose()
-    print(X)
-    print(X[0][0])
-    print(X[1][0])
-    print(X[2][0])
+    # print(X)
+    # print(X[0][0])
+    # print(X[1][0])
+    # print(X[2][0])
 
+    # X[0][0] = x
+    # X[0][1] = y
+    # X[0][2] = z
+    # f1 = normal0[0]*x + normal0[1]*y + normal0[2] * z - d0
+    # dxf1 = normal0[0]
+    # dyf1 = normal0[1]
+    # dzf1 = normal0[2]
+    # f2 = normal1[0]*x + normal1[1]*y + normal1[2] * z - d1
+    # dxf2 = normal1[0]
+    # dyf2 = normal1[1]
+    # dzf2 = normal1[2]
+    # f3 = qc[0] * x * x + qc[1] * x + qc[2] - y
+    # dxf3 = 2*qc[0] * x + qc[1]
+    # dyf3 = -1
+    # dzf3 = 0
 
-
-    #X[0][0] = x
-    #X[0][1] = y
-    #X[0][2] = z
-    #f1 = normal0[0]*x + normal0[1]*y + normal0[2] * z - d0
-    #dxf1 = normal0[0]
-    #dyf1 = normal0[1]
-    #dzf1 = normal0[2]
-    #f2 = normal1[0]*x + normal1[1]*y + normal1[2] * z - d1
-    #dxf2 = normal1[0]
-    #dyf2 = normal1[1]
-    #dzf2 = normal1[2]
-    #f3 = qc[0] * x * x + qc[1] * x + qc[2] - y
-    #dxf3 = 2*qc[0] * x + qc[1]
-    #dyf3 = -1
-    #dzf3 = 0
-    itarations_store = []
+    iterations_store = []
     error_store = []
+    plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='o', )
+
     i = 0
-    while i < 30:
-        i = i+1
-        itarations_store.append(i)
-        F = np.array([[normal0[0]*X[0][0] + normal0[1]*X[1][0] + normal0[2] * X[2][0] - d0,
-                       normal1[0]*X[0][0] + normal1[1]*X[1][0] + normal1[2] * X[2][0] - d1,
+    n = 30
+    while i < n:
+        # print(i)
+        # print(X)
+        if i > 1:
+            plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='.', alpha=(1 / n) * i)
+        i = i + 1
+        iterations_store.append(i)
+        F = []
+        F = np.array([[normal0[0] * X[0][0] + normal0[1] * X[1][0] + normal0[2] * X[2][0] - d0,
+                       normal1[0] * X[0][0] + normal1[1] * X[1][0] + normal1[2] * X[2][0] - d1,
                        qc[0] * X[0][0] * X[0][0] + qc[1] * X[0][0] + qc[2] - X[1][0]]])
         F = F.transpose()
         error_store.append(np.linalg.norm(F))
         J = np.array([[normal0[0], normal0[1], normal0[2]],
                       [normal1[0], normal1[1], normal1[2]],
-                      [2*qc[0] * X[0][0] + qc[1], -1, 0]])
+                      [2 * qc[0] * X[0][0] + qc[1], -1, 0]])
         X = X - np.linalg.inv(J).dot(F)
+
     print(X)
     plt.figure()
     plt.legend("newton rapsody for calculating intersection")
     plt.xlabel("itarations")
     plt.ylabel("error")
-    plt.plot(itarations_store, error_store)
+    plt.plot(iterations_store, error_store)
+    plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
     return X.transpose
 
     #return x,y,z
@@ -334,6 +343,15 @@ def planes_quadratic_intersect(target_points, trajectory_points):
         y_coo.append(int(i[1]))
         z_coo.append(int(i[2]))
 
+    plt3d.set_xlim3d(min(x_coo), max(x_coo))
+    plt3d.set_ylim3d(min(y_coo), max(y_coo))
+    plt3d.set_zlim3d(min(z_coo), max(z_coo))
+
+    plt3d.plot_trisurf([x_coo[0], x_coo[1], x_coo[2]], [y_coo[0], y_coo[1], y_coo[2]], [z_coo[0], z_coo[1], z_coo[2]],
+                       alpha=0.3)
+    plt3d.plot_trisurf([x_coo[3], x_coo[4], x_coo[5]], [y_coo[3], y_coo[4], y_coo[5]], [z_coo[3], z_coo[4], z_coo[5]],
+                       color="red", alpha=0.3)
+
     plt3d.scatter3D(x_coo, y_coo, z_coo, color="purple")
 
     e = []
@@ -345,34 +363,25 @@ def planes_quadratic_intersect(target_points, trajectory_points):
     plt3d.plot(e0, e, e0, color="black")
     plt3d.plot(e0, e0, e, color="black")
 
+    #target equation and plane
     point0 = np.array(p0)
     normal0 = np.array(cross_product(vect_AB(p0, p1), vect_AB(p0, p2)))
-
     d0 = -point0.dot(normal0)
-
-    xx0, yy0 = np.meshgrid(range(1000), range(1000))
-
-    zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
-
-    plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
-
-
+    #xx0, yy0 = np.meshgrid(range(1000), range(1000))
+    #zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
+    #plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
 
     # y = ax^2 + bx + c
     qc = quadratic_constants(trajectory_points)
     a, b, c = qc
 
-
+    #trajection equation and plane
     point1 = np.array(q0)
     normal1 = np.array(cross_product(vect_AB(q0, q1), vect_AB(q0, q2)))
-
     d1 = -point1.dot(normal1)
-
-    xx1, yy1 = np.meshgrid(range(1000), range(1000))
-
-    zz1 = (-normal1[0] * xx1 - normal1[1] * yy1 - d1) * 1. / normal1[2]
-
-    plt3d.plot_surface(xx1, yy1, zz1, color="red", alpha=0.15)
+    #xx1, yy1 = np.meshgrid(range(1000), range(1000))
+    #zz1 = (-normal1[0] * xx1 - normal1[1] * yy1 - d1) * 1. / normal1[2]
+    #lt3d.plot_surface(xx1, yy1, zz1, color="red", alpha=0.15)
 
     #plotting quadratic function
     z = []
@@ -391,12 +400,8 @@ def planes_quadratic_intersect(target_points, trajectory_points):
     global intersection
     intersection = Newton(normal0, d0, normal1, d1, qc)
 
-
-    plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
-
     plt.show(block = False)
     plt.pause(5)
-    plt.close
 
 def procces_data():
     global trajectory_points
