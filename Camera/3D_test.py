@@ -16,7 +16,7 @@ import math
 # https://stackoverflow.com/questions/53698635/how-to-define-a-plane-with-3-points-and-plot-it-in-3d
 
 
-target_points = [[0, -20, 100], [0, 20, -150], [-60, 150, 50]]
+target_points = [[0, -20, 100], [0, 20, 500], [-60, 150, 50]]
 trajectory_points = [[150, 222, 300], [-10, 40, 35], [50, -600, 26]]
 
 plt3d = plt.figure().gca(projection='3d')

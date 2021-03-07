@@ -9,7 +9,7 @@ class STATE:
 
     def __init__(self, start_state):
 
-        self.states = "getting_target", "waiting", "getting_data", "analyzing_data"
+        self.states = "getting_target", "getting_data", "analyzing_data"
         self.current_state = self.states[self.states.index(start_state)]
 
     def cycle(self):
@@ -55,8 +55,7 @@ depth_intrinsics = depth_profile.get_intrinsics()
 
 kernel = np.ones((5, 5), np.uint8)
 
-plt3d = plt.figure().gca(projection='3d')
-
+plt3d = 0
 
 
 def get_target(Mask, colour):
@@ -82,7 +81,7 @@ def get_target(Mask, colour):
 
 
                 point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], diepte)
-                print(point)
+                #print(point)
 
                 target_points[i].append(point)
 
@@ -114,21 +113,14 @@ def finalyzing_target():
             gem[j][2] = gem[j][2] + target_points[j][i][2]
     for i in range(0, len(gem)):
         gem[i][0] = gem[i][0] / n
-        coordinaten_transformatie(gem[0])
+        #coordinaten_transformatie(gem[0])
         gem[i][1] = gem[i][1] / n
-        coordinaten_transformatie(gem[1])
+        #coordinaten_transformatie(gem[1])
         gem[i][2] = gem[i][2] / n
-        coordinaten_transformatie(gem[2])
+        #coordinaten_transformatie(gem[2])
     target_points = gem
+    print("target points :")
     print(target_points)
-
-def coordinaten_transformatie(point):
-    x = point[0] + 240
-    y = point[1] + 320
-    z = int(math.sqrt(point[2]*point[2] - (point[0]*point[0] + point[1] * point[1])))
-
-
-    return x, y, z
 
 def get_bal(Mask, colour):
     text = str(colour[1])
@@ -157,7 +149,7 @@ def get_bal(Mask, colour):
 
 
             point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], diepte)
-            print(point)
+            #print(point)
             positions.append(point)
             trpoints.append(point)
 
@@ -257,9 +249,8 @@ def get_velocity():
     # print(velocity)
 
 def Newton(normal0, d0, normal1, d1, qc):
-    print("Newton")
     global X
-    X = np.array([[1000, 1000, 1000]])
+    X = np.array([[0, 0, 0]])
     X = X.transpose()
     # print(X)
     # print(X[0][0])
@@ -292,7 +283,7 @@ def Newton(normal0, d0, normal1, d1, qc):
         # print(i)
         # print(X)
         if i > 1:
-            plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='.', alpha=(1 / n) * i)
+            plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='.', alpha= 0.3)
         i = i + 1
         iterations_store.append(i)
         F = []
@@ -305,7 +296,7 @@ def Newton(normal0, d0, normal1, d1, qc):
                       [normal1[0], normal1[1], normal1[2]],
                       [2 * qc[0] * X[0][0] + qc[1], -1, 0]])
         X = X - np.linalg.inv(J).dot(F)
-
+    print("Newton :")
     print(X)
     plt.figure()
     plt.legend("newton rapsody for calculating intersection")
@@ -321,16 +312,17 @@ def planes_quadratic_intersect(target_points, trajectory_points):
 
 
     print("berekeningen")
-
+    global plt3d
     plt3d = plt.figure().gca(projection='3d')
+
     plt.xlabel("X axis")
     plt.ylabel("Y axis")
 
     p0, p1, p2 = target_points
     q0, q1, q2 = trajectory_points
-    x_coo = []
-    y_coo = []
-    z_coo = []
+    x_coo = [0]
+    y_coo = [0]
+    z_coo = [0]
     for i in target_points:
         x_coo.append(int(i[0]))
         y_coo.append(int(i[1]))
@@ -344,9 +336,9 @@ def planes_quadratic_intersect(target_points, trajectory_points):
     plt3d.set_ylim3d(min(y_coo), max(y_coo))
     plt3d.set_zlim3d(min(z_coo), max(z_coo))
 
-    plt3d.plot_trisurf([x_coo[0], x_coo[1], x_coo[2]], [y_coo[0], y_coo[1], y_coo[2]], [z_coo[0], z_coo[1], z_coo[2]],
+    plt3d.plot_trisurf([x_coo[3], x_coo[1], x_coo[2]], [y_coo[3], y_coo[1], y_coo[2]], [z_coo[3], z_coo[1], z_coo[2]],
                        alpha=0.3)
-    plt3d.plot_trisurf([x_coo[3], x_coo[4], x_coo[5]], [y_coo[3], y_coo[4], y_coo[5]], [z_coo[3], z_coo[4], z_coo[5]],
+    plt3d.plot_trisurf([x_coo[6], x_coo[4], x_coo[5]], [y_coo[6], y_coo[4], y_coo[5]], [z_coo[6], z_coo[4], z_coo[5]],
                        color="red", alpha=0.3)
 
     plt3d.scatter3D(x_coo, y_coo, z_coo, color="purple")
@@ -384,21 +376,24 @@ def planes_quadratic_intersect(target_points, trajectory_points):
     z = []
     x = []
     y = []
-    for j in range(-100, 100, 10):
+    for j in range(min(x_coo), max(x_coo), 10):
         x.append(j)
         y.append(a * j * j + b * j + c)
-        z.append((-normal1[0] * (a * j * j + b * j + c) - normal1[1] * j - d1) * 1. / normal1[2])
-        if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 1000):
-            print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
-            print(x[-1], y[-1], z[-1])
-            plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
+        z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
+        #barbaarse manier om nulpunt te vinden
+        #if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 1000):
+            #print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
+            #print(x[-1], y[-1], z[-1])
+            #plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
     plt3d.plot(x, y, z, color="red", alpha= 0.3)
 
     global intersection
     intersection = Newton(normal0, d0, normal1, d1, qc)
 
-    plt.show(block = False)
-    plt.pause(5)
+    cv2.destroyAllWindows()
+    plt.show(block = True)
+    #plt.pause(5)
+    #plt.close()
 
 def procces_data():
     global trajectory_points
@@ -407,17 +402,15 @@ def procces_data():
     print(positions)
     # selecting 3 points for calculation
     i = len(positions)
-    print("len = " + str(i))
+    #print("len = " + str(i))
     if i % 2 == 0:
         i = int(i/2)
-        print("i = " + str(i))
-        trajectory_pointst = [positions[i - 1], positions[i], positions[i + 1]]
+        #print("i = " + str(i))
+        trajectory_points = [positions[i - 1], positions[i], positions[i + 1]]
     else:
         i = int((i - 1) / 2)
-        print("i = " + str(i))
-        trajectory_pointst = [positions[i - 1], positions[i], positions[i + 1]]
-
-    trajectory_points = trajectory_pointst
+        #print("i = " + str(i))
+        trajectory_points = [positions[i - 1], positions[i], positions[i + 1]]
 
     # plotting the target plane the plane of the trow and the trajectory of the trow
     print("trajectory points : ")
@@ -453,8 +446,10 @@ try:
 
             hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
 
+            #plt.figure()
             #plt.imshow(hsv_frame)
             #plt.show()
+
 
             #get_velocity()
 
@@ -483,28 +478,28 @@ try:
                 get_target(blue_mask, blue)
 
             elif state.current_state is "getting_data":
-                draw_positions()
+                #draw_positions() kapot
                 # green color
-                #low_green = np.array([90, 70, 15])
-                #high_green = np.array([110, 120, 40])
+                low_green = np.array([70, 230, 140])
+                high_green = np.array([110, 255, 160])
 
-                lower_red = np.array([0, 120, 70])
-                upper_red = np.array([10, 255, 255])
-                mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                #lower_red = np.array([0, 120, 70])
+                #upper_red = np.array([10, 255, 255])
+                #mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
                 # Range for upper range
-                lower_red = np.array([170, 120, 70])
-                upper_red = np.array([180, 255, 255])
-                mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                #lower_red = np.array([170, 120, 70])
+                #upper_red = np.array([180, 255, 255])
+                #mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
                 # Generating the final mask to detect red color
-                green_mask = mask1 + mask2
+                #green_mask = mask1 + mask2
 
-                #green_mask = cv2.inRange(hsv_frame, low_green, high_green)
+                green_mask = cv2.inRange(hsv_frame, low_green, high_green)
                 #green_mask = cv2.erode(green_mask, kernel, iterations=2)
                 # cv2.imshow("blue mask_1", green_mask)
                 #green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
                 # cv2.imshow("blue mask_2", green_mask)
                 #green_mask = cv2.dilate(green_mask, kernel, iterations=1)
-                # cv2.imshow("blue mask_3", green_mask)
+                cv2.imshow("green_mask", green_mask)
                 #gousian blur for tracking
                 get_bal(green_mask, green)
 
@@ -522,7 +517,7 @@ try:
                 elif len(positions) > 2 and state.current_state is "getting_data":
                     state.cycle()
                     print(state.current_state)
-                    print("yes")
+                    #print("yes")
 
                     break
                 else:
@@ -538,6 +533,7 @@ try:
             positions = []
             trpoints = []
         elif state.current_state is "waiting":
+            #voeg waiting state terug toe
             if cv2.waitKey(1) & 0xFF == ord(' '):
                 state.cycle()
 
