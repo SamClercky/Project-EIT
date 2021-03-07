@@ -69,7 +69,7 @@ def afstand_punt_vlak(normal, d, point):
 def Newton(normal0, d0, normal1, d1, qc):
     print("Newton")
     global X
-    X = np.array([[1000, 1000, 1000]])
+    X = np.array([[-1000, 1000, 1000]])
     X = X.transpose()
     #print(X)
     #print(X[0][0])
@@ -106,8 +106,8 @@ def Newton(normal0, d0, normal1, d1, qc):
         i = i+1
         iterations_store.append(i)
         F = []
-        F = np.array([[normal0[0]*X[0][0] + normal0[1]*X[1][0] + normal0[2] * X[2][0] - d0,
-                       normal1[0]*X[0][0] + normal1[1]*X[1][0] + normal1[2] * X[2][0] - d1,
+        F = np.array([[normal0[0]*X[0][0] + normal0[1]*X[1][0] + normal0[2] * X[2][0] + d0,
+                       normal1[0]*X[0][0] + normal1[1]*X[1][0] + normal1[2] * X[2][0] + d1,
                        qc[0] * X[0][0] * X[0][0] + qc[1] * X[0][0] + qc[2] - X[1][0]]])
         F = F.transpose()
         error_store.append(np.linalg.norm(F))
@@ -193,10 +193,10 @@ def planes_quadratic_intersect(target_points, trajectory_points):
         x.append(j)
         y.append(a * j * j + b * j + c)
         z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
-        if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 5000):
+        #if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 5000):
             #print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
             #print(x[-1], y[-1], z[-1])
-            plt3d.scatter3D(x[-1], y[-1], z[-1], color="green", marker='x', )
+            #plt3d.scatter3D(x[-1], y[-1], z[-1], color="green", marker='x', )
 
 
     plt3d.plot(x, y, z, color="red")

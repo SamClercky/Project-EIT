@@ -1,11 +1,9 @@
-
 import pyrealsense2 as rs
 import numpy as np
 import cv2
 import time
 import math
 import matplotlib.pyplot as plt
-
 
 class STATE:
 
@@ -20,7 +18,6 @@ class STATE:
             self.current_state = self.states[0]
         else:
             self.current_state = self.states[self.states.index(self.current_state) + 1]
-
 
 state = STATE("getting_target")
 
@@ -38,7 +35,7 @@ target_point2 = []
 target_point3 = []
 target_points = [target_point1, target_point2, target_point3]
 
-trajectory_points = np.array()
+trajectory_points = np.array([])
 
 intersection = []
 
@@ -299,8 +296,8 @@ def Newton(normal0, d0, normal1, d1, qc):
         i = i + 1
         iterations_store.append(i)
         F = []
-        F = np.array([[normal0[0] * X[0][0] + normal0[1] * X[1][0] + normal0[2] * X[2][0] - d0,
-                       normal1[0] * X[0][0] + normal1[1] * X[1][0] + normal1[2] * X[2][0] - d1,
+        F = np.array([[normal0[0] * X[0][0] + normal0[1] * X[1][0] + normal0[2] * X[2][0] + d0,
+                       normal1[0] * X[0][0] + normal1[1] * X[1][0] + normal1[2] * X[2][0] + d1,
                        qc[0] * X[0][0] * X[0][0] + qc[1] * X[0][0] + qc[2] - X[1][0]]])
         F = F.transpose()
         error_store.append(np.linalg.norm(F))
