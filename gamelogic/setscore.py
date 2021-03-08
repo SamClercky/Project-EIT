@@ -2,11 +2,9 @@ class MyScore():
     """The class function gets a list of players, which will be put in a dictionary with the keys representing the player numbers
     or indexes and the value is a list with the first element the player name and the second one their score."""
     def scale(self, array):
-        i=0
         newscore=[]
         for x in array:
             newscore.append([0,x])
-            i+=1
         array.sort()
         arrayscale=[]
         for x in newscore:
