@@ -9,7 +9,7 @@ class STATE:
 
     def __init__(self, start_state):
 
-        self.states = "getting_target", "getting_data", "analyzing_data"
+        self.states = "getting_target", "waiting", "getting_data", "analyzing_data"
         self.current_state = self.states[self.states.index(start_state)]
 
     def cycle(self):
@@ -390,7 +390,7 @@ def planes_quadratic_intersect(target_points, trajectory_points):
     global intersection
     intersection = Newton(normal0, d0, normal1, d1, qc)
 
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
     plt.show(block = True)
     #plt.pause(5)
     #plt.close()
@@ -446,7 +446,7 @@ try:
 
             hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
 
-            #plt.figure()
+
             #plt.imshow(hsv_frame)
             #plt.show()
 
@@ -470,9 +470,9 @@ try:
                 # Generating the final mask to detect red color
                 blue_mask = mask1 + mask2
 
-                blue_mask = cv2.erode(blue_mask, kernel, iterations=1)
+                #blue_mask = cv2.erode(blue_mask, kernel, iterations=1)
                 blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
-                blue_mask = cv2.dilate(blue_mask, kernel, iterations=2)
+                blue_mask = cv2.dilate(blue_mask, kernel, iterations=3)
                 cv2.imshow("blue mask", blue_mask)
                 # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
                 get_target(blue_mask, blue)
@@ -480,8 +480,8 @@ try:
             elif state.current_state is "getting_data":
                 #draw_positions() kapot
                 # green color
-                low_green = np.array([70, 230, 140])
-                high_green = np.array([110, 255, 160])
+                low_green = np.array([55, 55, 120])
+                high_green = np.array([85, 100, 150])
 
                 #lower_red = np.array([0, 120, 70])
                 #upper_red = np.array([10, 255, 255])
@@ -496,9 +496,9 @@ try:
                 green_mask = cv2.inRange(hsv_frame, low_green, high_green)
                 #green_mask = cv2.erode(green_mask, kernel, iterations=2)
                 # cv2.imshow("blue mask_1", green_mask)
-                #green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
+                green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
                 # cv2.imshow("blue mask_2", green_mask)
-                #green_mask = cv2.dilate(green_mask, kernel, iterations=1)
+                green_mask = cv2.dilate(green_mask, kernel, iterations=3)
                 cv2.imshow("green_mask", green_mask)
                 #gousian blur for tracking
                 get_bal(green_mask, green)
@@ -524,6 +524,7 @@ try:
                     print("not enough points trow again")
                     print(positions)
                     positions = []
+
         if state.current_state is "analyzing_data":
             print(state.current_state)
             procces_data()
@@ -532,10 +533,13 @@ try:
             print(state.current_state)
             positions = []
             trpoints = []
+
         elif state.current_state is "waiting":
             #voeg waiting state terug toe
             if cv2.waitKey(1) & 0xFF == ord(' '):
                 state.cycle()
+                print(state.current_state)
+
 
 
 
