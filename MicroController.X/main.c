@@ -53,10 +53,10 @@ void main(void) {
         if (TMR0_HasOverflowOccured()) {
             TMR0_Initialize();
 
-            //PI();
-            //Java();
+            PI();
+            UARTCommunication();
             // NIET ONDER 60 GAAN
-            PWM5_LoadDutyValue((uint8_t) 120);
+            //PWM5_LoadDutyValue((uint8_t) 120);
         }
     }
 }

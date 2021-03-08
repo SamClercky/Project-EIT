@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
     
-    void Java(void);
+    void UARTCommunication(void);
 
 #ifdef	__cplusplus
 }

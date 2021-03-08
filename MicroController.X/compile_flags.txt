@@ -1,0 +1,5 @@
+-xc
+-I
+/opt/microchip/xc8/v2.31/pic/include/c99/
+-I
+/opt/microchip/xc8/v2.31/pic/include/
