@@ -9,7 +9,7 @@ class STATE:
 
     def __init__(self, start_state):
 
-        self.states = "getting_target", "waiting", "getting_data", "analyzing_data"
+        self.states = "getting_target", "getting_data"
         self.current_state = self.states[self.states.index(start_state)]
 
     def cycle(self):
@@ -25,7 +25,6 @@ green = [[0, 255, 0], "green"]
 blue = [[255, 0, 0],'blue']
 
 positions = []
-trpoints = []
 amountOfPoints = len(positions)
 velocity = []
 t0 = time.monotonic()
@@ -56,6 +55,9 @@ depth_intrinsics = depth_profile.get_intrinsics()
 kernel = np.ones((5, 5), np.uint8)
 
 plt3d = 0
+
+color_image = 0
+depth_image = 0
 
 
 def get_target(Mask, colour):
@@ -119,8 +121,6 @@ def finalyzing_target():
         gem[i][2] = gem[i][2] / n
         #coordinaten_transformatie(gem[2])
     target_points = gem
-    print("target points :")
-    print(target_points)
 
 def get_bal(Mask, colour):
     text = str(colour[1])
@@ -151,7 +151,6 @@ def get_bal(Mask, colour):
             point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], diepte)
             #print(point)
             positions.append(point)
-            trpoints.append(point)
 
             centroid = str(point)
 
@@ -304,7 +303,7 @@ def Newton(normal0, d0, normal1, d1, qc):
     plt.ylabel("error")
     plt.plot(iterations_store, error_store)
     plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
-    return X.transpose
+    return X
 
     #return x,y,z
 
@@ -391,9 +390,9 @@ def planes_quadratic_intersect(target_points, trajectory_points):
     intersection = Newton(normal0, d0, normal1, d1, qc)
 
     #cv2.destroyAllWindows()
-    plt.show(block = True)
-    #plt.pause(5)
-    #plt.close()
+    plt.show(block = False)
+    plt.pause(2)
+    plt.close()
 
 def procces_data():
     global trajectory_points
@@ -418,129 +417,141 @@ def procces_data():
     planes_quadratic_intersect(target_points, trajectory_points)
 
 def get_distace_to_intersect():
+    global target_points, intersection
+    print(target_points)
+    print(intersection)
     d = []
     for i in range(0, 3):
-        d.append(math.sqrt((target_points[i][0] - intersection[0])*(target_points[i][0] - intersection[0]) + (target_points[i][1] - intersection[1])*(target_points[i][1] - intersection[1]) + (target_points[i][2] - intersection[2])*(target_points[i][2] - intersection[2])))
+        xmxie2 = (target_points[i][0] - intersection[0][0])*(target_points[i][0] - intersection[0][0])
+        ymyie2 = (target_points[i][1] - intersection[1][0])*(target_points[i][1] - intersection[1][0])
+        zmzie2 = (target_points[i][2] - intersection[2][0])*(target_points[i][2] - intersection[2][0])
+        dx = math.sqrt(xmxie2+ ymyie2+ zmzie2)
+        d.append(dx)
     return d
 
-def draw_positions():
-    #dit werkt niet meer omdat er alleen 3d punten opgeslagen worden
-    for i in range(0, len(trpoints)):
-        cv2.circle(color_image, (int(trpoints[i][0]), int(trpoints[i][1])), 5, (0,255,255), 2)
 
+
+def run_code(wanted_state):
+    state.current_state = wanted_state
+    global depth_image, color_image, positions
+
+    while state.current_state is "getting_target" :
+
+        frames = pipeline.wait_for_frames()
+
+        depth_frame = frames.get_depth_frame()
+        color_frame = frames.get_color_frame()
+
+
+        depth_image = np.asanyarray(depth_frame.get_data())
+
+        color_image = np.asanyarray(color_frame.get_data())
+
+        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+
+        hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
+
+        # plt.imshow(hsv_frame)
+        # plt.show()
+
+        # Blue color
+        # low_blue = np.array([90, 250, 70])
+        # high_blue = np.array([130, 255, 130])
+        # blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
+
+        lower_red = np.array([0, 120, 70])
+        upper_red = np.array([10, 255, 255])
+        mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
+        # Range for upper range
+        lower_red = np.array([170, 120, 70])
+        upper_red = np.array([180, 255, 255])
+        mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
+        # Generating the final mask to detect red color
+        blue_mask = mask1 + mask2
+
+        # blue_mask = cv2.erode(blue_mask, kernel, iterations=1)
+        blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
+        blue_mask = cv2.dilate(blue_mask, kernel, iterations=3)
+        cv2.imshow("blue mask", blue_mask)
+        # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
+        get_target(blue_mask, blue)
+
+        cv2.imshow("Color Image", color_image)
+
+        #functie van andreas implementeren
+        if cv2.waitKey(1) & 0xFF == ord(' '):
+            print("finalyzing_target")
+            finalyzing_target()
+            print("target points :")
+            print(target_points)
+            positions = []
+            cv2.destroyAllWindows()
+            break
+
+
+    while state.current_state is "getting_data":
+
+        frames = pipeline.wait_for_frames()
+
+        depth_frame = frames.get_depth_frame()
+        color_frame = frames.get_color_frame()
+
+        depth_image = np.asanyarray(depth_frame.get_data())
+
+        color_image = np.asanyarray(color_frame.get_data())
+
+        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+
+        hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
+
+        # draw_positions() kapot
+
+        # green color
+        low_green = np.array([55, 55, 120])
+        high_green = np.array([85, 100, 150])
+
+        # lower_red = np.array([0, 120, 70])
+        # upper_red = np.array([10, 255, 255])
+        # mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
+        # Range for upper range
+        # lower_red = np.array([170, 120, 70])
+        # upper_red = np.array([180, 255, 255])
+        # mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
+        # Generating the final mask to detect red color
+        # green_mask = mask1 + mask2
+
+        green_mask = cv2.inRange(hsv_frame, low_green, high_green)
+        # green_mask = cv2.erode(green_mask, kernel, iterations=2)
+        # cv2.imshow("blue mask_1", green_mask)
+        green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
+        # cv2.imshow("blue mask_2", green_mask)
+        green_mask = cv2.dilate(green_mask, kernel, iterations=3)
+        # gousian blur for tracking
+        get_bal(green_mask, green)
+
+        cv2.imshow("green_mask", green_mask)
+        cv2.imshow("Color Image", color_image)
+
+
+        #functie van andreas implementeren
+        if cv2.waitKey(1) & 0xFF == ord(' '):
+            if len(positions) > 2:
+                procces_data()
+                positions = []
+                cv2.destroyAllWindows()
+                return get_distace_to_intersect()
+            else:
+                print("not enough points trow again")
+                print(positions)
+                positions = []
 
 try:
-    while True:
-        while state.current_state is "getting_target" or state.current_state is "getting_data":
 
-            frames = pipeline.wait_for_frames()
-
-            depth_frame = frames.get_depth_frame()
-            color_frame = frames.get_color_frame()
-
-            depth_image = np.asanyarray(depth_frame.get_data())
-
-            color_image = np.asanyarray(color_frame.get_data())
-
-            depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
-
-            hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
-
-
-            #plt.imshow(hsv_frame)
-            #plt.show()
-
-
-            #get_velocity()
-
-            if state.current_state is "getting_target":
-                # Blue color
-                #low_blue = np.array([90, 250, 70])
-                #high_blue = np.array([130, 255, 130])
-                #blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
-
-
-                lower_red = np.array([0, 120, 70])
-                upper_red = np.array([10, 255, 255])
-                mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
-                # Range for upper range
-                lower_red = np.array([170, 120, 70])
-                upper_red = np.array([180, 255, 255])
-                mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
-                # Generating the final mask to detect red color
-                blue_mask = mask1 + mask2
-
-                #blue_mask = cv2.erode(blue_mask, kernel, iterations=1)
-                blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
-                blue_mask = cv2.dilate(blue_mask, kernel, iterations=3)
-                cv2.imshow("blue mask", blue_mask)
-                # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
-                get_target(blue_mask, blue)
-
-            elif state.current_state is "getting_data":
-                #draw_positions() kapot
-                # green color
-                low_green = np.array([55, 55, 120])
-                high_green = np.array([85, 100, 150])
-
-                #lower_red = np.array([0, 120, 70])
-                #upper_red = np.array([10, 255, 255])
-                #mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
-                # Range for upper range
-                #lower_red = np.array([170, 120, 70])
-                #upper_red = np.array([180, 255, 255])
-                #mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
-                # Generating the final mask to detect red color
-                #green_mask = mask1 + mask2
-
-                green_mask = cv2.inRange(hsv_frame, low_green, high_green)
-                #green_mask = cv2.erode(green_mask, kernel, iterations=2)
-                # cv2.imshow("blue mask_1", green_mask)
-                green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
-                # cv2.imshow("blue mask_2", green_mask)
-                green_mask = cv2.dilate(green_mask, kernel, iterations=3)
-                cv2.imshow("green_mask", green_mask)
-                #gousian blur for tracking
-                get_bal(green_mask, green)
-
-            #cv2.imshow("Ik ben ook maar een persoon (gray)", hsv_frame)
-            #cv2.imshow("Depth Image", depth_colormap)
-            cv2.imshow("Color Image", color_image)
-
-
-            if cv2.waitKey(1) & 0xFF == ord(' '):
-                if state.current_state is "getting_target":
-                    print("finalyzing_target")
-                    finalyzing_target()
-                    state.cycle()
-                    print(state.current_state)
-                elif len(positions) > 2 and state.current_state is "getting_data":
-                    state.cycle()
-                    print(state.current_state)
-                    #print("yes")
-
-                    break
-                else:
-                    print("not enough points trow again")
-                    print(positions)
-                    positions = []
-
-        if state.current_state is "analyzing_data":
-            print(state.current_state)
-            procces_data()
-            state.cycle()
-            state.cycle()
-            print(state.current_state)
-            positions = []
-            trpoints = []
-
-        elif state.current_state is "waiting":
-            #v  oeg waiting state terug toe
-            if cv2.waitKey(1) & 0xFF == ord(' '):
-                state.cycle()
-                print(state.current_state)
-
-
+    run_code("getting_target")
+    print("afstand van de target punten tot de intersect run 1 : " + str(run_code("getting_data")))
+    print("afstand van de target punten tot de intersect run 2 : " + str(run_code("getting_data")))
+    print("afstand van de target punten tot de intersect run 3 : " + str(run_code("getting_data")))
+    print("klaar")
 
 
 finally:
