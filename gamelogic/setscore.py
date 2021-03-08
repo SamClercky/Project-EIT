@@ -16,7 +16,7 @@ class MyScore():
                     x[0]=len(array)-i
                 i+=1
         for x in newscore:
-            if 30-x[0]*5>= 0:
+            if 35-x[0]*5>= 0:
                 arrayscale.append(35-x[0]*5)
             else:
                 arrayscale.append(0)
