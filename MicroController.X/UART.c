@@ -8,6 +8,7 @@
 #include <stdlib.h> //for atoi and atof functions
 #include <ctype.h> //for toupper command
 #include "matrix.h"
+#include "led.h"
 
 /**
   Section: UART Module APIs
@@ -87,7 +88,8 @@ bool Execute_Command(char* data) {
 			{
 				// set LED on breadboard
 				uint8_t newLedStatus = (uint8_t) atoi(data+1); // receive new LED flag
-				//setLED
+				LED_SetStatus(newLedStatus);
+				printf("%d\n", newLedStatus); // echo data back
 				break;
 			}
 		case 'H':
