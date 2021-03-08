@@ -7,6 +7,7 @@
 #include "PI.h"
 #include <stdlib.h> //for atoi and atof functions
 #include <ctype.h> //for toupper command
+#include "matrix.h"
 
 /**
   Section: UART Module APIs
@@ -70,51 +71,83 @@ bool Execute_Command(char* data) {
 
 	switch(toupper(command)) { // normalize command
 		case 'S': //Setpoint                            
-			setpoint = (uint8_t) atoi(data + 1); //atoi = ASCII to integer
-			PI_SetSetpoint(setpoint);
-			printf("%d\n", PI_GetSensorHeight()); // send sensorheight back
-			break;
+			{
+				setpoint = (uint8_t) atoi(data + 1); //atoi = ASCII to integer
+				PI_SetSetpoint(setpoint);
+				printf("%d\n", PI_GetSensorHeight()); // send sensorheight back
+				break;
+			}
+		case 'B':
+			{
+				// send button status
+				printf("%d\n", Matrix_ScanButtons());
+				break;
+			}
+		case 'L':
+			{
+				// set LED on breadboard
+				uint8_t newLedStatus = (uint8_t) atoi(data+1); // receive new LED flag
+				//setLED
+				break;
+			}
 		case 'H':
-			Display_Menu();
-			break;
+			{
+				Display_Menu();
+				break;
+			}
 		default:
-			printf("\nInvalid command %c\n", command);
-			Display_Menu();
+			{
+				printf("\nInvalid command %c\n", command);
+				Display_Menu();
+			}
 	}
 	return true;
 }
 
 void UARTCommunication(void) {
+	// State machine ==> set correct state depending on incoming messages and
+	// block new ones while processing
+	// Code comes from example on canvas
 	switch (state) {
 		case STATE_INIT:
-			Display_Menu();
-			state = STATE_START_READ_CMD;
-			break;
-		case STATE_START_READ_CMD:
-			// reset cmd
-			cmd_str_len = -1;
-			cmd_str[0] = '\0';
-
-			// TODO: Bekijk of volgende printf nodig is
-			// printf(">");
-			state = STATE_READ_CMD;
-			break;
-		case STATE_READ_CMD:
-			if (Read_Command(cmd_str, &cmd_str_len)) {
-				state = STATE_EXEC_CMD;
-			}
-			break;
-		case STATE_EXEC_CMD:
-			if (Execute_Command(cmd_str)) {
+			{
+				Display_Menu();
 				state = STATE_START_READ_CMD;
-			} else {
-				state = STATE_TERMINATE;
+				break;
 			}
-			break;
+		case STATE_START_READ_CMD:
+			{
+				// reset cmd
+				cmd_str_len = -1;
+				cmd_str[0] = '\0';
+
+				// TODO: Bekijk of volgende printf nodig is
+				// printf(">");
+				state = STATE_READ_CMD;
+				break;
+			}
+		case STATE_READ_CMD:
+			{
+				if (Read_Command(cmd_str, &cmd_str_len)) {
+					state = STATE_EXEC_CMD;
+				}
+				break;
+			}
+		case STATE_EXEC_CMD:
+			{
+				if (Execute_Command(cmd_str)) {
+					state = STATE_START_READ_CMD;
+				} else {
+					state = STATE_TERMINATE;
+				}
+				break;
+			}
 		default: // normaal nooit uitgevoerd
-			state = STATE_TERMINATE;
-			printf("ERROR: Invalid state");
-			break;
+			{
+				state = STATE_TERMINATE;
+				printf("ERROR: Invalid state");
+				break;
+			}
 	}
 }
 
