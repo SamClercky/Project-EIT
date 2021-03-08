@@ -3,3 +3,4 @@
 **/dist
 **/build/
 **/mcc_generated_files
+**/__pycache__

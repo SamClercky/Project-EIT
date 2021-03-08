@@ -1,13 +1,9 @@
-
-
-
 import pyrealsense2 as rs
 import numpy as np
 import cv2
 import time
 import math
 import matplotlib.pyplot as plt
-
 
 class STATE:
 
@@ -23,15 +19,25 @@ class STATE:
         else:
             self.current_state = self.states[self.states.index(self.current_state) + 1]
 
-
 state = STATE("getting_target")
 
 green = [[0, 255, 0], "green"]
-target_points = []
+blue = [[255, 0, 0],'blue']
+
 positions = []
+trpoints = []
 amountOfPoints = len(positions)
 velocity = []
 t0 = time.monotonic()
+
+target_point1 = []
+target_point2 = []
+target_point3 = []
+target_points = [target_point1, target_point2, target_point3]
+
+trajectory_points = np.array([])
+
+intersection = []
 
 pipeline = rs.pipeline()
 
@@ -40,9 +46,16 @@ config = rs.config()
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)  # Depth map uint16
 config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
+pc = rs.pointcloud()                                                    # Point cloud object (Depth map --> 3D Points)
+
 profile = pipeline.start(config)
 
+depth_profile = rs.video_stream_profile(profile.get_stream(rs.stream.depth))
+depth_intrinsics = depth_profile.get_intrinsics()
+
 kernel = np.ones((5, 5), np.uint8)
+
+plt3d = 0
 
 
 def get_target(Mask, colour):
@@ -50,36 +63,67 @@ def get_target(Mask, colour):
 
     (cnts, _) = cv2.findContours(Mask.copy(),
                                  cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # look for any contours
     if len(cnts) > 0:
-        cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
-        ((x, y), radius) = cv2.minEnclosingCircle(cnt)
+        cntss = sorted(cnts, key=cv2.contourArea, reverse=True)
+        for i in range(0, len(cntss)):
+            if i < 3:
+                cnt = cntss[i]
+                # Get the radius of the enclosing circle around the found contour
+                ((x, y), radius) = cv2.minEnclosingCircle(cnt)
+                # Draw the circle around the contour
+                cv2.circle(color_image, (int(x - radius / 2), int(y)), int(radius / 2), colour[0], 2)
+                # Get the moments to calculate the center of the contour
+                M = cv2.moments(cnt)
+                center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+                diepte = (depth_image[center[1]][center[0]])
 
-        target_points.append([int(x), int(y)])
-        cv2.putText(color_image, "Point found", (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
-        # Draw the circle around the contour
-        cv2.circle(color_image, (int(x), int(y)), int(radius), colour[0], 2)
+                point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], diepte)
+                #print(point)
 
-        # Get the moments to calculate the center of the contour
-        M = cv2.moments(cnt)
-        center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
-        diepte = (depth_image[center[1]][center[0]])
+                target_points[i].append(point)
 
-        centroid = str(center)
+                centroid = str(point)
 
-        cv2.putText(color_image, centroid, (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
-        cv2.putText(color_image, str(diepte), (100, 150), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(color_image, centroid, center, cv2.FONT_HERSHEY_SIMPLEX,
+                            0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
-    # code voor target
-    point0 = [50, 50, 50]
-    if len(target_points) == 3:
-        state.cycle()
+                # write a text to frame
+                # cv2.putText(frame, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
+                #            0.9, colour[0], 2, cv2.LINE_AA)
+            else:
+                break
 
-def draw_contours(Mask, colour):
-    text = str(colour[1] + "balls")
+def finalyzing_target():
+    global target_points
+    n = min(len(target_point1), len(target_point2), len(target_point3))
+    #print(n)
+    gem1 = [0, 0, 0]
+    gem2 = [0, 0, 0]
+    gem3 = [0, 0, 0]
+    gem = [gem1, gem2, gem3]
+    for i in range(0, n):
+        #print(i)
+        for j in range(0, 3):
+            #print(i , j)
+            gem[j][0] = gem[j][0] + target_points[j][i][0]
+            gem[j][1] = gem[j][1] + target_points[j][i][1]
+            gem[j][2] = gem[j][2] + target_points[j][i][2]
+    for i in range(0, len(gem)):
+        gem[i][0] = gem[i][0] / n
+        #coordinaten_transformatie(gem[0])
+        gem[i][1] = gem[i][1] / n
+        #coordinaten_transformatie(gem[1])
+        gem[i][2] = gem[i][2] / n
+        #coordinaten_transformatie(gem[2])
+    target_points = gem
+    print("target points :")
+    print(target_points)
+
+def get_bal(Mask, colour):
+    text = str(colour[1])
     # print(text)
     # why use .copy()?
     # RETR_EXTERNAL segt welke contours worden bijgehouden in dit geval alle child contours worden weggelaten
@@ -93,26 +137,32 @@ def draw_contours(Mask, colour):
         cnt = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
         # Get the radius of the enclosing circle around the found contour
         ((x, y), radius) = cv2.minEnclosingCircle(cnt)
-        positions.append((int(x), int(y), time.monotonic() - t0))
 
         # Draw the circle around the contour
         cv2.circle(color_image, (int(x), int(y)), int(radius), colour[0], 2)
 
         # Get the moments to calculate the center of the contour
         M = cv2.moments(cnt)
-        center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
-        diepte = (depth_image[center[1]][center[0]])
+        if M['m00'] != 0:
+            center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
+            diepte = (depth_image[center[1]][center[0]])
 
-        centroid = str(center)
 
-        cv2.putText(color_image, centroid, (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
-        cv2.putText(color_image, str(diepte), (100, 150), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 2, cv2.LINE_AA)
+            point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], diepte)
+            #print(point)
+            positions.append(point)
+            trpoints.append(point)
 
-        # write a text to frame
-        # cv2.putText(color_image, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
-        #            0.9, colour[0], 2, cv2.LINE_AA)
+            centroid = str(point)
+
+            cv2.putText(color_image, centroid, (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (255, 255, 255), 2, cv2.LINE_AA)
+            #cv2.putText(color_image, str(diepte), (100, 150), cv2.FONT_HERSHEY_SIMPLEX,
+             #           0.5, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # write a text to frame
+            # cv2.putText(color_image, str(text), (int(x + 50), int(y + 50)), cv2.FONT_HERSHEY_SIMPLEX,
+            #            0.9, colour[0], 2, cv2.LINE_AA)
 
 def round_up(n, decimals=0):
     multiplier = 10 ** decimals
@@ -149,6 +199,17 @@ def quadratic_constants(points):
     c = y0 - a * x0 * x0 - b * x0
 
     return a, b, c
+
+def afstand_punt_vlak(normal, d, point):
+    # afstand = | ap + bq + cr + d | / √(a2 + b2 + c2).
+    teller = 0
+    noemer = 0
+    for i in range(0,len(normal)):
+        teller = teller + normal[i] * point[i]
+        noemer = noemer + point[i] * point[i]
+    teller = teller + d
+
+    return abs(teller)/math.sqrt(noemer)
 
 def get_velocity():
     global amountOfPoints
@@ -187,77 +248,190 @@ def get_velocity():
                     0.5, (255, 255, 255), 2, cv2.LINE_AA)
     # print(velocity)
 
+def Newton(normal0, d0, normal1, d1, qc):
+    global X
+    X = np.array([[0, 0, 0]])
+    X = X.transpose()
+    # print(X)
+    # print(X[0][0])
+    # print(X[1][0])
+    # print(X[2][0])
+
+    # X[0][0] = x
+    # X[0][1] = y
+    # X[0][2] = z
+    # f1 = normal0[0]*x + normal0[1]*y + normal0[2] * z - d0
+    # dxf1 = normal0[0]
+    # dyf1 = normal0[1]
+    # dzf1 = normal0[2]
+    # f2 = normal1[0]*x + normal1[1]*y + normal1[2] * z - d1
+    # dxf2 = normal1[0]
+    # dyf2 = normal1[1]
+    # dzf2 = normal1[2]
+    # f3 = qc[0] * x * x + qc[1] * x + qc[2] - y
+    # dxf3 = 2*qc[0] * x + qc[1]
+    # dyf3 = -1
+    # dzf3 = 0
+
+    iterations_store = []
+    error_store = []
+    plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='o', )
+
+    i = 0
+    n = 30
+    while i < n:
+        # print(i)
+        # print(X)
+        if i > 1:
+            plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='.', alpha= 0.3)
+        i = i + 1
+        iterations_store.append(i)
+        F = []
+        F = np.array([[normal0[0] * X[0][0] + normal0[1] * X[1][0] + normal0[2] * X[2][0] + d0,
+                       normal1[0] * X[0][0] + normal1[1] * X[1][0] + normal1[2] * X[2][0] + d1,
+                       qc[0] * X[0][0] * X[0][0] + qc[1] * X[0][0] + qc[2] - X[1][0]]])
+        F = F.transpose()
+        error_store.append(np.linalg.norm(F))
+        J = np.array([[normal0[0], normal0[1], normal0[2]],
+                      [normal1[0], normal1[1], normal1[2]],
+                      [2 * qc[0] * X[0][0] + qc[1], -1, 0]])
+        X = X - np.linalg.inv(J).dot(F)
+    print("Newton :")
+    print(X)
+    plt.figure()
+    plt.legend("newton rapsody for calculating intersection")
+    plt.xlabel("itarations")
+    plt.ylabel("error")
+    plt.plot(iterations_store, error_store)
+    plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
+    return X.transpose
+
+    #return x,y,z
+
 def planes_quadratic_intersect(target_points, trajectory_points):
 
+
+    print("berekeningen")
+    global plt3d
     plt3d = plt.figure().gca(projection='3d')
+
     plt.xlabel("X axis")
     plt.ylabel("Y axis")
 
     p0, p1, p2 = target_points
     q0, q1, q2 = trajectory_points
-    x_coo = []
-    y_coo = []
-    z_coo = []
+    x_coo = [0]
+    y_coo = [0]
+    z_coo = [0]
     for i in target_points:
-        x_coo.append(i[0])
-        y_coo.append(i[1])
-        z_coo.append(i[2])
+        x_coo.append(int(i[0]))
+        y_coo.append(int(i[1]))
+        z_coo.append(int(i[2]))
     for i in trajectory_points:
-        x_coo.append(i[0])
-        y_coo.append(i[1])
-        z_coo.append(i[2])
+        x_coo.append(int(i[0]))
+        y_coo.append(int(i[1]))
+        z_coo.append(int(i[2]))
+
+    plt3d.set_xlim3d(min(x_coo), max(x_coo))
+    plt3d.set_ylim3d(min(y_coo), max(y_coo))
+    plt3d.set_zlim3d(min(z_coo), max(z_coo))
+
+    plt3d.plot_trisurf([x_coo[3], x_coo[1], x_coo[2]], [y_coo[3], y_coo[1], y_coo[2]], [z_coo[3], z_coo[1], z_coo[2]],
+                       alpha=0.3)
+    plt3d.plot_trisurf([x_coo[6], x_coo[4], x_coo[5]], [y_coo[6], y_coo[4], y_coo[5]], [z_coo[6], z_coo[4], z_coo[5]],
+                       color="red", alpha=0.3)
 
     plt3d.scatter3D(x_coo, y_coo, z_coo, color="purple")
 
+    e = []
+    e0 = []
+    for i in range(0, 100, 1):
+        e.append(i)
+        e0.append(0)
+    plt3d.plot(e, e0, e0, color="black")
+    plt3d.plot(e0, e, e0, color="black")
+    plt3d.plot(e0, e0, e, color="black")
+
+    #target equation and plane
     point0 = np.array(p0)
     normal0 = np.array(cross_product(vect_AB(p0, p1), vect_AB(p0, p2)))
-
     d0 = -point0.dot(normal0)
-
-    xx0, yy0 = np.meshgrid(range(max(x_coo)), range(max(y_coo)))
-
-    zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
-
-    plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
-
-
+    #xx0, yy0 = np.meshgrid(range(1000), range(1000))
+    #zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
+    #plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
 
     # y = ax^2 + bx + c
-    a, b, c = quadratic_constants(trajectory_points)
+    qc = quadratic_constants(trajectory_points)
+    a, b, c = qc
 
+    #trajection equation and plane
     point1 = np.array(q0)
     normal1 = np.array(cross_product(vect_AB(q0, q1), vect_AB(q0, q2)))
-
     d1 = -point1.dot(normal1)
+    #xx1, yy1 = np.meshgrid(range(1000), range(1000))
+    #zz1 = (-normal1[0] * xx1 - normal1[1] * yy1 - d1) * 1. / normal1[2]
+    #lt3d.plot_surface(xx1, yy1, zz1, color="red", alpha=0.15)
 
     #plotting quadratic function
     z = []
     x = []
     y = []
-    for j in range(min(x_coo)-10, max(x_coo)+10 , 10):
+    for j in range(min(x_coo), max(x_coo), 10):
         x.append(j)
         y.append(a * j * j + b * j + c)
         z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
+        #barbaarse manier om nulpunt te vinden
+        #if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 1000):
+            #print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
+            #print(x[-1], y[-1], z[-1])
+            #plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
+    plt3d.plot(x, y, z, color="red", alpha= 0.3)
 
-    plt3d.scatter3D(x, y, z, color="red", alpha= 0.3)
+    global intersection
+    intersection = Newton(normal0, d0, normal1, d1, qc)
 
-    plt.show()
+    cv2.destroyAllWindows()
+    plt.show(block = True)
+    #plt.pause(5)
+    #plt.close()
 
 def procces_data():
+    global trajectory_points
+    trajectory_points = []
+    print("positions :")
+    print(positions)
     # selecting 3 points for calculation
     i = len(positions)
+    #print("len = " + str(i))
     if i % 2 == 0:
+        i = int(i/2)
+        #print("i = " + str(i))
         trajectory_points = [positions[i - 1], positions[i], positions[i + 1]]
     else:
-        i = (i - 1) / 2
+        i = int((i - 1) / 2)
+        #print("i = " + str(i))
         trajectory_points = [positions[i - 1], positions[i], positions[i + 1]]
 
     # plotting the target plane the plane of the trow and the trajectory of the trow
+    print("trajectory points : ")
+    print(trajectory_points)
     planes_quadratic_intersect(target_points, trajectory_points)
+
+def get_distace_to_intersect():
+    d = []
+    for i in range(0, 3):
+        d.append(math.sqrt((target_points[i][0] - intersection[0])*(target_points[i][0] - intersection[0]) + (target_points[i][1] - intersection[1])*(target_points[i][1] - intersection[1]) + (target_points[i][2] - intersection[2])*(target_points[i][2] - intersection[2])))
+    return d
+
+def draw_positions():
+    #dit werkt niet meer omdat er alleen 3d punten opgeslagen worden
+    for i in range(0, len(trpoints)):
+        cv2.circle(color_image, (int(trpoints[i][0]), int(trpoints[i][1])), 5, (0,255,255), 2)
+
 
 try:
     while True:
-        while state is "getting_target" or state is "getting_data":
+        while state.current_state is "getting_target" or state.current_state is "getting_data":
 
             frames = pipeline.wait_for_frames()
 
@@ -272,37 +446,98 @@ try:
 
             hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
 
-            cv2.imshow("Ik ben ook maar een persoon (gray)", hsv_frame)
+            #plt.figure()
+            #plt.imshow(hsv_frame)
+            #plt.show()
 
-            # green color
-            low_green = np.array([40, 52, 72])
-            high_green = np.array([102, 255, 255])
-            green_mask = cv2.inRange(hsv_frame, low_green, high_green)
-            green_mask = cv2.erode(green_mask, kernel, iterations=2)
-            # cv2.imshow("blue mask_1", green_mask)
-            green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
-            # cv2.imshow("blue mask_2", green_mask)
-            green_mask = cv2.dilate(green_mask, kernel, iterations=1)
-            # cv2.imshow("blue mask_3", green_mask)
-
-            # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
 
             #get_velocity()
 
-            if state is "getting_target":
-                get_target(green_mask, green)
-            elif state is "getting_data":
-                draw_contours(green_mask, green)
+            if state.current_state is "getting_target":
+                # Blue color
+                #low_blue = np.array([90, 250, 70])
+                #high_blue = np.array([130, 255, 130])
+                #blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
 
-            cv2.imshow("Depth Image", depth_colormap)
+
+                lower_red = np.array([0, 120, 70])
+                upper_red = np.array([10, 255, 255])
+                mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                # Range for upper range
+                lower_red = np.array([170, 120, 70])
+                upper_red = np.array([180, 255, 255])
+                mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                # Generating the final mask to detect red color
+                blue_mask = mask1 + mask2
+
+                blue_mask = cv2.erode(blue_mask, kernel, iterations=1)
+                blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
+                blue_mask = cv2.dilate(blue_mask, kernel, iterations=2)
+                cv2.imshow("blue mask", blue_mask)
+                # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
+                get_target(blue_mask, blue)
+
+            elif state.current_state is "getting_data":
+                #draw_positions() kapot
+                # green color
+                low_green = np.array([70, 230, 140])
+                high_green = np.array([110, 255, 160])
+
+                #lower_red = np.array([0, 120, 70])
+                #upper_red = np.array([10, 255, 255])
+                #mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                # Range for upper range
+                #lower_red = np.array([170, 120, 70])
+                #upper_red = np.array([180, 255, 255])
+                #mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                # Generating the final mask to detect red color
+                #green_mask = mask1 + mask2
+
+                green_mask = cv2.inRange(hsv_frame, low_green, high_green)
+                #green_mask = cv2.erode(green_mask, kernel, iterations=2)
+                # cv2.imshow("blue mask_1", green_mask)
+                #green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
+                # cv2.imshow("blue mask_2", green_mask)
+                #green_mask = cv2.dilate(green_mask, kernel, iterations=1)
+                cv2.imshow("green_mask", green_mask)
+                #gousian blur for tracking
+                get_bal(green_mask, green)
+
+            #cv2.imshow("Ik ben ook maar een persoon (gray)", hsv_frame)
+            #cv2.imshow("Depth Image", depth_colormap)
             cv2.imshow("Color Image", color_image)
 
+
+            if cv2.waitKey(1) & 0xFF == ord(' '):
+                if state.current_state is "getting_target":
+                    print("finalyzing_target")
+                    finalyzing_target()
+                    state.cycle()
+                    print(state.current_state)
+                elif len(positions) > 2 and state.current_state is "getting_data":
+                    state.cycle()
+                    print(state.current_state)
+                    #print("yes")
+
+                    break
+                else:
+                    print("not enough points trow again")
+                    print(positions)
+                    positions = []
+        if state.current_state is "analyzing_data":
+            print(state.current_state)
+            procces_data()
+            state.cycle()
+            state.cycle()
+            print(state.current_state)
+            positions = []
+            trpoints = []
+        elif state.current_state is "waiting":
+            #voeg waiting state terug toe
             if cv2.waitKey(1) & 0xFF == ord(' '):
                 state.cycle()
-            cv2.waitKey(1)
 
-        if state is "analyzing_data":
-            procces_data()
+
 
 finally:
     pipeline.stop()
