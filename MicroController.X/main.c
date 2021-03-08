@@ -56,7 +56,7 @@ void main(void) {
             //PI();
             //Java();
             // NIET ONDER 60 GAAN
-            PWM5_LoadDutyValue((uint8_t)60);
+            PWM5_LoadDutyValue((uint8_t) 120);
         }
     }
 }
