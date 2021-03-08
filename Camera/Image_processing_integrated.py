@@ -184,6 +184,22 @@ class CameraControl():
         return uXv
 
     def quadratic_constants(self, points):
+        x, y, z = [], [], []
+        for i in range(0, len(positions)):
+            x.append(positions[i][0])
+            y.append(positions[i][1])
+            z.append(positions[i][2])
+        self.plt3d.scatter3D(x, y, z, color = "green", alpha= 0.2)
+        #print(positions)
+        x = np.array(x)
+        y = np.array(y)
+        #print("proberen")
+        #print(x)
+        #print(y)
+        z = np.polyfit(x, y, 2)
+        print("polyfit : ")
+        print(z)
+
         p0, p1, p2 = points
         x0, y0, z0 = p0
         x1, y1, z1 = p1
@@ -197,7 +213,9 @@ class CameraControl():
         b = (g - a * k) / h
         c = y0 - a * x0 * x0 - b * x0
 
-        return a, b, c
+        print("3 punten : ")
+        print(a, b, c)
+        return a, b, c, z[0], z[1], z[2]
 
     def afstand_punt_vlak(self, normal, d, point):
         # afstand = | ap + bq + cr + d | / √(a2 + b2 + c2).
@@ -210,7 +228,7 @@ class CameraControl():
 
         return abs(teller)/math.sqrt(noemer)
 
-    def Newton(self, normal0, d0, normal1, d1, qc):
+    def Newton(self, normal0, d0, normal1, d1, qc, collor):
         X = np.array([[0, 0, 0]])
         X = X.transpose()
         # print(X)
@@ -236,15 +254,15 @@ class CameraControl():
 
         iterations_store = []
         error_store = []
-        self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='o', )
+        self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='o', )
 
         i = 0
-        n = 30
+        n = 10
         while i < n:
             # print(i)
             # print(X)
             if i > 1:
-                self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='.', alpha= 0.3)
+                self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='.', alpha= 0.3)
             i = i + 1
             iterations_store.append(i)
             F = []
@@ -265,20 +283,26 @@ class CameraControl():
         plt.xlabel("itarations")
         plt.ylabel("error")
         plt.plot(iterations_store, error_store)
-        self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
+        self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='x', )
         return X
 
         #return x,y,z
 
     def planes_quadratic_intersect(self, target_points, trajectory_points):
 
-
-        print("berekeningen")
-
         self.plt3d = plt.figure().gca(projection='3d')
 
         plt.xlabel("X axis")
         plt.ylabel("Y axis")
+
+        e = []
+        e0 = []
+        for i in range(0, 100, 1):
+            e.append(i)
+            e0.append(0)
+        self.plt3d.plot(e, e0, e0, color="black")
+        self.plt3d.plot(e0, e, e0, color="black")
+        self.plt3d.plot(e0, e0, e, color="black")
 
         p0, p1, p2 = target_points
         q0, q1, q2 = trajectory_points
@@ -300,19 +324,12 @@ class CameraControl():
 
         self.plt3d.plot_trisurf([x_coo[3], x_coo[1], x_coo[2]], [y_coo[3], y_coo[1], y_coo[2]], [z_coo[3], z_coo[1], z_coo[2]],
                            alpha=0.3)
-        self.plt3d.plot_trisurf([x_coo[6], x_coo[4], x_coo[5]], [y_coo[6], y_coo[4], y_coo[5]], [z_coo[6], z_coo[4], z_coo[5]],
-                           color="red", alpha=0.3)
+        #self.plt3d.plot_trisurf([x_coo[6], x_coo[4], x_coo[5]], [y_coo[6], y_coo[4], y_coo[5]], [z_coo[6], z_coo[4], z_coo[5]],
+        #                   color="red", alpha=0.3)
 
         self.plt3d.scatter3D(x_coo, y_coo, z_coo, color="purple")
 
-        e = []
-        e0 = []
-        for i in range(0, 100, 1):
-            e.append(i)
-            e0.append(0)
-        self.plt3d.plot(e, e0, e0, color="black")
-        self.plt3d.plot(e0, e, e0, color="black")
-        self.plt3d.plot(e0, e0, e, color="black")
+
 
         #target equation and plane
         point0 = np.array(p0)
@@ -322,10 +339,6 @@ class CameraControl():
         #zz0 = (-normal0[0] * xx0 - normal0[1] * yy0 - d0) * 1. / normal0[2]
         #plt3d.plot_surface(xx0, yy0, zz0, color="gray", alpha=0.15)
 
-        # y = ax^2 + bx + c
-        qc = self.quadratic_constants(trajectory_points)
-        a, b, c = qc
-
         #trajection equation and plane
         point1 = np.array(q0)
         normal1 = np.array(self.cross_product(self.vect_AB(q0, q1), self.vect_AB(q0, q2)))
@@ -334,13 +347,17 @@ class CameraControl():
         #zz1 = (-normal1[0] * xx1 - normal1[1] * yy1 - d1) * 1. / normal1[2]
         #lt3d.plot_surface(xx1, yy1, zz1, color="red", alpha=0.15)
 
+        # y = ax^2 + bx + c
+        qc = self.quadratic_constants(trajectory_points)
+        a, b, c, g, h, l = qc
+
         #plotting quadratic function
-        z = []
-        x = []
-        y = []
+        x, y, z, xp, yp = [], [], [], [], []
         for j in range(min(x_coo), max(x_coo), 10):
             x.append(j)
+            xp.append(j)
             y.append(a * j * j + b * j + c)
+            yp.append(g*j*j+ h*j+ l)
             z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
             #barbaarse manier om nulpunt te vinden
             #if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 1000):
@@ -348,18 +365,22 @@ class CameraControl():
                 #print(x[-1], y[-1], z[-1])
                 #plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
         self.plt3d.plot(x, y, z, color="red", alpha= 0.3)
+        self.plt3d.plot(xp, yp, z, color="green", alpha= 0.3)
 
-        self.intersection = self.Newton(normal0, d0, normal1, d1, qc)
+        #3punten :
+        self.intersection = self.Newton(normal0, d0, normal1, d1, qc, "red")
+        #alle punten :
+        self.Newton(normal0, d0, normal1, d1, (qc[3], qc[4], qc[5]), "green")
 
         #cv2.destroyAllWindows()
         plt.show(block = False)
         plt.pause(2)
-        plt.close()
+        plt.close('all')
 
     def procces_data(self):
         self.trajectory_points = []
-        print("positions :")
-        print(positions)
+        #print("positions :")
+        #print(positions)
         # selecting 3 points for calculation
         i = len(positions)
         #print("len = " + str(i))
@@ -373,13 +394,13 @@ class CameraControl():
             self.trajectory_points = [positions[i - 1], positions[i], positions[i + 1]]
 
         # plotting the target plane the plane of the trow and the trajectory of the trow
-        print("trajectory points : ")
-        print(self.trajectory_points)
+        #print("trajectory points : ")
+        #print(self.trajectory_points)
         self.planes_quadratic_intersect(self.target_points, self.trajectory_points)
 
     def get_distace_to_intersect(self):
-        print(self.target_points)
-        print(self.intersection)
+        #print(self.target_points)
+        #print(self.intersection)
         d = []
         for i in range(0, 3):
             xmxie2 = (self.target_points[i][0] - self.intersection[0][0])*(self.target_points[i][0] - self.intersection[0][0])
