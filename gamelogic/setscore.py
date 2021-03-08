@@ -5,6 +5,8 @@ class MyScore():
         newscore=[]
         for x in array:
             newscore.append([0,x])
+        array=set(array)
+        array=list(array)
         array.sort()
         arrayscale=[]
         for x in newscore:
