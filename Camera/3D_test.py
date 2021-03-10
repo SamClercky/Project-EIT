@@ -40,6 +40,16 @@ def cross_product(u, v):
     return uXv
 
 def quadratic_constants(points):
+    x, y = [], []
+    for i in range(0, len(points)):
+        x.append(points[i][0])
+        y.append(points[i][1])
+
+    x = np.array(x)
+    y = np.array(y)
+    z = np.polyfit(x, y, 2)
+    print("polyfit : ")
+    print(z)
     p0, p1, p2 = points
     x0, y0, z0 = p0
     x1, y1, z1 = p1
@@ -53,6 +63,7 @@ def quadratic_constants(points):
     b = (g - a * k) / h
     c = y0 - a * x0 * x0 - b * x0
 
+    print(a, b, c)
     return a, b, c
 
 def afstand_punt_vlak(normal, d, point):
@@ -123,8 +134,6 @@ def Newton(normal0, d0, normal1, d1, qc):
     plt.ylabel("error")
     plt.plot(iterations_store, error_store)
     plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color="blue", marker='x', )
-
-
 
 
 def planes_quadratic_intersect(target_points, trajectory_points):

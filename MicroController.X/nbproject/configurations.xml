@@ -43,6 +43,10 @@
       <itemPath>PI.c</itemPath>
       <itemPath>UART.c</itemPath>
       <itemPath>main.c</itemPath>
+      <itemPath>matrix.c</itemPath>
+      <itemPath>matrix.h</itemPath>
+      <itemPath>led.c</itemPath>
+      <itemPath>led.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
