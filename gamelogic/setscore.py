@@ -5,6 +5,8 @@ class MyScore():
         newscore=[]
         for x in array:
             newscore.append([0,x])
+        array=set(array)
+        array=list(array)
         array.sort()
         arrayscale=[]
         for x in newscore:
@@ -14,7 +16,7 @@ class MyScore():
                     x[0]=len(array)-i
                 i+=1
         for x in newscore:
-            if 30-x[0]*5>= 0:
+            if 35-x[0]*5>= 0:
                 arrayscale.append(35-x[0]*5)
             else:
                 arrayscale.append(0)
