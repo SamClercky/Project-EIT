@@ -27,8 +27,3 @@ class MyScore():
         for i in range(1,len(newscore)+1):
             scoresheet.get(i)[1]=scoresheet.get(i)[1]+newscore[i-1]
              
-
-#score = MyScore()
-#dictt = {1 : ["Player 1", 100], 2 : ["Player 2", 100]}
-#score.suddendeath(dictt)
-#print(score.winners)
