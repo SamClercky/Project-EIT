@@ -17,7 +17,7 @@ class MyScore():
                 i+=1
         for x in newscore:
             if 40-x[0]*5>= 0:
-                arrayscale.append(35-x[0]*5)
+                arrayscale.append(40-x[0]*5)
             else:
                 arrayscale.append(0)
         print(newscore)
