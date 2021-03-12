@@ -13,7 +13,7 @@ class MyScore():
             i=0
             for y in array:
                 if x[1]==y:
-                    x[0]=len(array)-i
+                    x[0]=i+1
                 i+=1
         for x in newscore:
             if 35-x[0]*5>= 0:
