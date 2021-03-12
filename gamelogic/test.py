@@ -2,7 +2,7 @@ from gamestate import *
 from setscore import *
 from pynput.keyboard import Key, Controller
 from pynput.keyboard import Key, Listener
- 
+from playsound import playsound 
 dictt = {1 : ["Player 1", 10], 2 : ["Player 2", 100], 3 : ["Player 3", 100]}
 game = GameState()
 score = MyScore()
