@@ -20,10 +20,10 @@ game.start()
 cam.run_code("getting_target")
 
 while(not game.end):
-    print("\nRound "+str(n+1))
+    print("\nRound "+str(n+1)+"\n\n")
     newscore=[]
     for i in range(1,len(game.scoresheet)+1):
-        print("\n"+game.scoresheet.get(i)[0]+" to throw.")
+        print(game.scoresheet.get(i)[0]+" to throw.")
         with Listener(
             on_release=on_release) as listener:
                 listener.join()
