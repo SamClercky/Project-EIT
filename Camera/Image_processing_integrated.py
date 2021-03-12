@@ -216,8 +216,8 @@ class CameraControl():
         #print(x)
         #print(y)
         z = np.polyfit(x, y, 2)
-        print("polyfit : ")
-        print(z)
+        #print("polyfit : ")
+        #print(z)
 
         p0, p1, p2 = points
         x0, y0, z0 = p0
@@ -294,9 +294,9 @@ class CameraControl():
                           [normal1[0], normal1[1], normal1[2]],
                           [2 * qc[0] * X[0][0] + qc[1], -1, 0]])
             X = X - np.linalg.inv(J).dot(F)
-        print("Newton :")
+        #print("Newton :")
         self.X = X
-        print(X)
+        #print(X)
         #plt.figure()
         #plt.legend("newton rapsody for calculating intersection")
         #plt.xlabel("itarations")
