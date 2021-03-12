@@ -33,8 +33,9 @@ while(not game.end):
 
     newscore = score.scale(newscore)
     score.update(game.scoresheet, newscore)
+    print("Scoreboard")
     for i in range(1,len(game.scoresheet)+1):
-        print(game.scoresheet.get(i))
+        print(game.scoresheet.get(i)[0]+": "+game.scoresheet.get(i)[1])
     n+=1
     if(n==3):
         game.endstate(game.scoresheet)
