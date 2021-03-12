@@ -9,4 +9,4 @@ score = MyScore()
 array=[100,651321,651321,4656]
 dictt={1 : ["anass",100]}
 test=[-10,-315]
-playsound(r"C:\Users\Anass Hamdi\OneDrive - Vrije Universiteit Brussel\Documenten\Github\Project-EIT\Project-EIT\gamelogic\play.wav")
+playsound("gamelogic/play.wav")
