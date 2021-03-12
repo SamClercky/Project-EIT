@@ -24,15 +24,15 @@ class PcSerial:
             print("Microchip not found: placebo is being served")
             selected_port = None
         elif len(open_ports) == 1:
-            selected_port = open_ports[0]
+            selected_port = open_ports[0].device
         else:
             # More then 1 port available, let the user deside
             print("Multiple ports found, please select one:")
             for idx, port in enumerate(open_ports):
-                print(f"\t{idx}: {port}")
+                print(f"\t{idx}: {port.device}")
             port_id = int(input("> "))
 
-            selected_port = open_ports[port_id]
+            selected_port = open_ports[port_id].device
 
             print("Thx for helping me out ;)")
 
