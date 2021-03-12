@@ -562,16 +562,5 @@ class CameraControl():
     def stop_pipline(self):
         self.pipeline.stop()
 
-cam = CameraControl()
-cam.run_code("getting_target")
-print("afstand van de target punten tot de intersect run 1 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 2 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 3 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 1 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 2 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 3 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 1 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 2 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 3 : " + str(cam.run_code("getting_data")))
-print("klaar")
-cam.stop_pipline()
+
+
