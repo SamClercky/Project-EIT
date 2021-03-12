@@ -26,15 +26,17 @@ while(not game.end):
         with Listener(
             on_release=on_release) as listener:
                 listener.join()
-        distance=min(cam.run_code("getting_data"))
+        distance=min([abs(x) for x in cam.run_code("getting_data")])
         newscore.append(distance)
         
         
 
     newscore = score.scale(newscore)
     score.update(game.scoresheet, newscore)
+    for i in range(1,len(game.scoresheet)+1):
+        print(game.scoresheet.get(i))
     n+=1
-    if(n==4):
+    if(n==3):
         game.endstate(game.scoresheet)
     
     
