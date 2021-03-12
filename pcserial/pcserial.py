@@ -44,7 +44,7 @@ class PcSerial:
 
     def poll(self) -> bool:
         if self._port == None: # Placebo data
-            return random.random() > 0.9
+            return random.random() > 0.999
         else:
             self._resetPort()
             

@@ -20,6 +20,7 @@ class STATE:
             self.current_state = self.states[self.states.index(self.current_state) + 1]
 
 state = STATE("getting_target")
+pcs = pcserial()
 
 green = [[0, 255, 0], "green"]
 blue = [[255, 0, 0],'blue']
