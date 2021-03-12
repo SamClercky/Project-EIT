@@ -1,7 +1,7 @@
 from setscore import *
 from gamestate import *
 from pynput.keyboard import Key, Listener
-#from Image_processing_integrated import *
+from Image_processing_integrated import *
 
 #line 7-10 from the source https://pythonhosted.org/pynput/keyboard.html
 def on_release(key):                                                                    
@@ -11,7 +11,7 @@ def on_release(key):
 
 game = GameState()
 score = MyScore()
-#cam = CameraControl()
+cam = CameraControl()
 n=0
 game.start()
 
@@ -23,12 +23,13 @@ while(not game.end):
     newscore=[]
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+" to throw.")
-        distance=min(cam.run_code("getting_data"))
-        newscore.append(distance)
-        
         with Listener(
             on_release=on_release) as listener:
                 listener.join()
+        distance=min(cam.run_code("getting_data"))
+        newscore.append(distance)
+        
+        
 
     newscore = score.scale(newscore)
     score.update(game.scoresheet, newscore)
