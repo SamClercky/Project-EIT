@@ -40,6 +40,5 @@ while(not game.end):
     n+=1
     if(n==3):
         game.endstate(game.scoresheet)
-playsound("gamelogic/play.wav")    
 cam.stop_pipline()
-    
+playsound("gamelogic/play.wav")      
