@@ -24,22 +24,22 @@ class PcSerial:
             print("Microchip not found: placebo is being served")
             selected_port = None
         elif len(open_ports) == 1:
-            selected_port = open_ports[0]
+            selected_port = open_ports[0].device
         else:
             # More then 1 port available, let the user deside
             print("Multiple ports found, please select one:")
             for idx, port in enumerate(open_ports):
-                print(f"\t{idx}: {port}")
+                print(f"\t{idx}: {port.device}")
             port_id = int(input("> "))
 
-            selected_port = open_ports[port_id]
+            selected_port = open_ports[port_id].device
 
             print("Thx for helping me out ;)")
 
         if selected_port == None:
             self._port = None
         else:
-            self._port = serial.Serial(selected_port, baudrate=115200)
+            self._port = serial.Serial(selected_port, baudrate=9600)
             print(f"Connected to port: {selected_port}")
 
     def poll(self) -> bool:
@@ -48,10 +48,8 @@ class PcSerial:
         else:
             self._resetPort()
             
-            self._port.write(b"B\n")
+            self._writeToPort(b"B")
             clickedBtns = int(self._port.readline().rstrip())
-
-            print("Writing to device: B")
             
             needUpdate = (self._clickedBtns != 0 and
                     self._clickedBtns != clickedBtns)
@@ -83,7 +81,7 @@ class PcSerial:
             self._ledState &= ~(1<<ledIndex)
 
         # Schrijf weg
-        self._port.write(f"L{self._ledState}".encode("ascii"))
+        self._writeToPort(f"L{self._ledState}".encode("ascii"))
         self._port.readline() # Read echo
         print(f"Writing to device: L{self._ledState}")
     
@@ -95,7 +93,7 @@ class PcSerial:
 
         self._resetPort()
 
-        self._port.write(f"S{height}".encode("ascii"))
+        self._writeToPort(f"S{height}".encode("ascii"))
         self._port.readline() # Read echo
 
         print(f"Writing to device: S{height}")
@@ -106,9 +104,18 @@ class PcSerial:
         self._port.reset_input_buffer();
         self._port.reset_output_buffer();
             
+    def _writeToPort(self, data):
+        if self._port == None:
+            return
+
+        data = b' ' + data + b'\r'
+        print(f"Writing to device: {data}")
+        self._port.write(data)
+        self._port.flush()
+
     def __del__(self): # Always clean after yourself :)
         if self._port != None:
             self._port.close()
 
 def _clamp(n: int, min_n = 0, max_n = 255):
-    return max(max_n, min(max_n, n))
+    return max(min_n, min(max_n, n))
