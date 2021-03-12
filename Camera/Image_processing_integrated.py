@@ -86,19 +86,24 @@ class CameraControl():
                     # Get the radius of the enclosing circle around the found contour
                     ((x, y), radius) = cv2.minEnclosingCircle(cnt)
                     # Draw the circle around the contour
-                    cv2.circle(color_image, (int(x - radius / 2), int(y)), int(radius / 2), colour[0], 2)
+                    cv2.circle(color_image, (int(x), int(y)), int(radius), colour[0], 2)
                     # Get the moments to calculate the center of the contour
                     M = cv2.moments(cnt)
                     center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
-                    diepte = (depth_image[center[1]][center[0]])
 
+                    x, y = center
+                    mask = CameraControl.depth_image[x - 3:x + 3, y - 3:y + 3]
+                    diepte = np.mean(mask)
 
                     point = rs.rs2_deproject_pixel_to_point(self.depth_intrinsics, [x, y], diepte)
                     #print(point)
 
-                    self.target_points[i].append(point)
 
-                    centroid = str(point)
+                    self.target_points[i].append(point)
+                    if any([np.isnan(value) for value in point]) is False:
+                        centroid = f"{int(point[0])},{int(point[1])},{int(point[2])}"
+                    else:
+                        centroid = "nan"
 
                     cv2.putText(color_image, centroid, center, cv2.FONT_HERSHEY_SIMPLEX,
                                 0.5, (255, 255, 255), 2, cv2.LINE_AA)
@@ -157,12 +162,11 @@ class CameraControl():
                 center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
                 x,y = center
 
-                mask = depth_image[x-3:x+3,y-3:y+3]
+                mask = CameraControl.depth_image[x-3:x+3,y-3:y+3]
                 diepte = np.mean(mask)
 
-
                 point = rs.rs2_deproject_pixel_to_point(self.depth_intrinsics, [x, y], diepte)
-                #print(point)
+                print(point , diepte)
 
                 if len(positions) >= 1 and self.distance_between_points(point, positions[-1]) > 100 :
                     #print(self.distance_between_points(point, positions[-1]))
@@ -208,6 +212,7 @@ class CameraControl():
             x.append(positions[i][0])
             y.append(positions[i][1])
             z.append(positions[i][2])
+        print(positions)
         self.plt3d.scatter3D(x, y, z, color = "green", alpha= 0.2)
         #print(positions)
         x = np.array(x)
@@ -432,7 +437,8 @@ class CameraControl():
 
     def run_code(self, wanted_state):
         try:
-            global depth_image, color_image, positions
+            global color_image, positions
+            positions = []
 
             self.state.current_state = wanted_state
 
@@ -445,11 +451,11 @@ class CameraControl():
                 color_frame = aligned_frames.get_color_frame()
 
 
-                depth_image = np.asanyarray(depth_frame.get_data())
+                CameraControl.depth_image = np.asanyarray(depth_frame.get_data())
 
                 color_image = np.asanyarray(color_frame.get_data())
 
-                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(CameraControl.depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
                 hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
 
@@ -508,11 +514,11 @@ class CameraControl():
                 depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
 
-                depth_image = np.asanyarray(depth_frame.get_data())
+                CameraControl.depth_image = np.asanyarray(depth_frame.get_data())
 
                 color_image = np.asanyarray(color_frame.get_data())
 
-                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(CameraControl.depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
                 hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
 
@@ -562,5 +568,9 @@ class CameraControl():
     def stop_pipline(self):
         self.pipeline.stop()
 
-
-
+cam = CameraControl()
+cam.run_code("getting_target")
+cam.run_code("getting_data")
+cam.run_code("getting_data")
+cam.run_code("getting_data")
+cam.run_code("getting_data")
