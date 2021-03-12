@@ -1,11 +1,11 @@
-from setscore import *
-from gamestate import *
+from gamelogic.setscore import *
+from gamelogic.gamestate import *
 from pynput.keyboard import Key, Listener
-from Image_processing_integrated import *
+from Camera.Image_processing_integrated import *
 
 #line 7-10 from the source https://pythonhosted.org/pynput/keyboard.html
 def on_release(key):                                                                    
-    if key == Key.n:
+    if key == Key.esc:
         # Stop listener
         return False 
 
@@ -40,5 +40,5 @@ while(not game.end):
     if(n==3):
         game.endstate(game.scoresheet)
     
-    
+cam.stop_pipline()
     
