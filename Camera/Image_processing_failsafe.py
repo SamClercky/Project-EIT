@@ -538,6 +538,8 @@ class CameraControl():
 
     def run_code(self, wanted_state):
         try:
+            print("___________________________________________________________Camera___________________________________________________________")
+            print("Camera : ")
             self.state.current_state = wanted_state
 
             while self.state.current_state is "getting_target" :
@@ -668,7 +670,7 @@ class CameraControl():
                     self.positions_on_color = []
                     print("reset")
         finally:
-            print("___________________________________________________________")
+            print("____________________________________________________________________________________________________________________________")
 
     def stop_pipline(self):
         self.pipeline.stop()
