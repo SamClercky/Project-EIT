@@ -1,7 +1,7 @@
 from gamelogic.setscore import *
 from gamelogic.gamestate import *
 from pynput.keyboard import Key, Listener
-from Camera.Image_processing_integrated import *
+from Camera.Image_processing_failsafe import *
 from playsound import playsound 
 
 #line 7-10 from the source https://pythonhosted.org/pynput/keyboard.html

@@ -673,9 +673,9 @@ class CameraControl():
     def stop_pipline(self):
         self.pipeline.stop()
 
-cam = CameraControl()
-cam.run_code("getting_target")
-while True:
-    print(cam.run_code("getting_data"))
-print("done")
-cam.stop_pipline()
+#cam = CameraControl()
+#cam.run_code("getting_target")
+#while True:
+#    print(cam.run_code("getting_data"))
+#print("done")
+#cam.stop_pipline()
