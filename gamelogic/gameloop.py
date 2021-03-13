@@ -34,7 +34,7 @@ while(not game.end):
 
     newscore = score.scale(newscore)
     score.update(game.scoresheet, newscore)
-    print("\n\nScoreboard\n\n")
+    print("\n\nScoreboard\n")
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+": "+str(game.scoresheet.get(i)[1])+"\n")
     n+=1
