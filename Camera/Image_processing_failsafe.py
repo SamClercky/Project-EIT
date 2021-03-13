@@ -26,6 +26,7 @@ class CameraControl():
 
 
     def __init__(self):
+        # voor als ik op kot werk -> "kot"
         self.place = "kot"
         self.calibreren = False
         self.speltype = 1
