@@ -256,7 +256,6 @@ class CameraControl():
         cv2.imshow("positions", self.color_image)
         plt.show(block=True)
 
-
     def quadratic_constants(self, points):
         x, y, z = [], [], []
         for i in range(0, len(self.positions)):
@@ -501,9 +500,6 @@ class CameraControl():
         self.draw_positions_on_color_image()
         plt.show(block = True)
 
-
-
-
     def procces_data(self):
         self.trajectory_points = []
         #print("positions :")
@@ -523,7 +519,6 @@ class CameraControl():
         # plotting the target plane the plane of the trow and the trajectory of the trow
         self.planes_quadratic_intersect(self.target_points, self.trajectory_points)
 
-
     def get_distace_to_intersect(self):
         #print(self.target_points)
         #print(self.intersection)
@@ -539,7 +534,6 @@ class CameraControl():
     def run_code(self, wanted_state):
         try:
             print("___________________________________________________________Camera___________________________________________________________")
-            print("Camera : ")
             self.state.current_state = wanted_state
 
             while self.state.current_state is "getting_target" :
@@ -592,10 +586,10 @@ class CameraControl():
                         break
                     else:
                         print("niet genoeg punten, rustig jong het komt goed nog even wachten # = " + str(min(len(self.target_point1), len(self.target_point2), len(self.target_point3))))
-                        print("target point1 : " + str(self.target_point1))
-                        print("target point2 : " + str(self.target_point2))
-                        print("target point3 : " + str(self.target_point3))
-                        print("total : " + str(self.target_points))
+                        #print("target point1 : " + str(self.target_point1))
+                        #print("target point2 : " + str(self.target_point2))
+                        #print("target point3 : " + str(self.target_point3))
+                        #print("total : " + str(self.target_points))
                 if cv2.waitKey(1) & 0xFF == ord('s'):
                     if len(self.positions) != []:
                         self.plot_poitions()
