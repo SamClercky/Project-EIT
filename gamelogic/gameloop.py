@@ -1,7 +1,7 @@
 from gamelogic.setscore import *
 from gamelogic.gamestate import *
 from pynput.keyboard import Key, Listener
-from Camera.Image_processing_failsafe import *
+from Camera.Image_processing_integrated import *
 from playsound import playsound 
 
 #line 7-10 from the source https://pythonhosted.org/pynput/keyboard.html
@@ -36,7 +36,7 @@ while(not game.end):
     score.update(game.scoresheet, newscore)
     print("\n\nScoreboard\n\n")
     for i in range(1,len(game.scoresheet)+1):
-        print(game.scoresheet.get(i)[0]+": "+game.scoresheet.get(i)[1]+"\n")
+        print(game.scoresheet.get(i)[0]+": "+str(game.scoresheet.get(i)[1])+"\n")
     n+=1
     if(n==3):
         game.endstate(game.scoresheet)
