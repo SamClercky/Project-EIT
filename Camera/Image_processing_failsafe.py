@@ -26,8 +26,12 @@ class CameraControl():
 
 
     def __init__(self):
+        self.place = "kot"
+        self.calibreren = False
+        self.speltype = 1
         self.state = STATE("getting_target")
         self.positions = []
+        self.positions_on_color = []
         self.amountOfPoints = len(self.positions)
         self.target_point1 = []
         self.target_point2 = []
@@ -63,6 +67,29 @@ class CameraControl():
 
     pc = rs.pointcloud()                                                    # Point cloud object (Depth map --> 3D Points)
 
+    def draw_positions_on_color_image(self):
+        print("drawing")
+        for i in self.positions_on_color:
+            cv2.circle(self.color_image, i[0], int(i[1]/150), (255, 153, 255))
+
+    def draw_instructions(self):
+        cv2.putText(self.color_image, "instructies:"
+                    , (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        if(self.state.current_state is "getting_target"):
+            cv2.putText(self.color_image, "-press ' ' for finalising the target"
+                        , (120, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        else:
+            cv2.putText(self.color_image, "-press ' ' for getting score"
+                        , (120, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(self.color_image, "-press 's' for plotting positions (positions aren't thrown away)"
+                    , (120, 35), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(self.color_image, "-press 'f' pay respect and reset found points"
+                    , (120, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
     def distance_between_points(self, point1, point2):
         sum = 0
@@ -95,8 +122,10 @@ class CameraControl():
 
                     point = rs.rs2_deproject_pixel_to_point(self.depth_intrinsics, [x, y], depht)
                     #print(point)
-
-                    self.target_points[i].append(point)
+                    if abs(self.distance_between_points(point, (0, 0, 0))) > 30:
+                        self.target_points[i].append(point)
+                        self.positions.append(point)
+                        self.positions_on_color.append(((x,y), depht))
 
                     if any([np.isnan(value) for value in point]) is False:
                         centroid = f"{int(point[0])},{int(point[1])},{int(point[2])}"
@@ -149,27 +178,29 @@ class CameraControl():
             M = cv2.moments(cnt)
             if M['m00'] != 0:
                 center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
-                print(str(center))
+                #print(str(center))
                 x,y = center
 
                 mask = self.depth_image[y -3:y + 3, x - 3:x + 3]
                 depht = np.mean(mask)
 
                 point = rs.rs2_deproject_pixel_to_point(self.depth_intrinsics, [x, y], depht)
-                print(point , depht)
-
-                if len(self.positions) >= 1 and self.distance_between_points(point, self.positions[-1]) > 100 :
+                #print(point , depht)
+                cutoff = 200
+                if len(self.positions) >= 1 and self.distance_between_points(point, self.positions[-1]) > cutoff  and abs(self.distance_between_points(point, (0, 0, 0))) > 30 :
                     self.positions.append(point)
+                    self.positions_on_color.append(((x,y), depht))
                 elif len(self.positions) == 0:
                     self.positions.append(point)
+                    self.positions_on_color.append(((x,y), depht))
 
-                if any([np.isnan(value) for value in point]) is False:
+                if any([np.isnan(value) for value in point]) is False and abs(self.distance_between_points(point, (0, 0, 0))) > 30:
                     centroid = f"{int(point[0])},{int(point[1])},{int(point[2])}"
                 else:
                     centroid = "nan"
 
-                cv2.putText(self.color_image, centroid, (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                #cv2.putText(self.color_image, centroid, (100, 100), cv2.FONT_HERSHEY_SIMPLEX,
+                #            0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
     def round_up(self, n, decimals=0):
         multiplier = 10 ** decimals
@@ -206,20 +237,25 @@ class CameraControl():
         self.plt3d.plot(e0, e, e0, color="black")
         self.plt3d.plot(e0, e0, e, color="black")
 
-        x, y, z = [], [], []
+        x, y, z = [0], [0], [0]
         for i in range(0, len(self.positions)):
             x.append(self.positions[i][0])
             y.append(self.positions[i][1])
             z.append(self.positions[i][2])
-        self.plt3d.set_xlim3d(min(x), max(x))
-        self.plt3d.set_ylim3d(min(y), max(y))
-        self.plt3d.set_zlim3d(min(z), max(z))
+        self.plt3d.set_xlim3d(min(x)-1, max(x)+1)
+        self.plt3d.set_ylim3d(min(y)-1, max(y)+1)
+        self.plt3d.set_zlim3d(min(z)-1, max(z)+1)
 
         print("plot")
         print(self.positions)
-        self.plt3d.scatter3D(x, y, z, color="green", alpha=0.2)
-        plt.show()
-        self.positions = []
+        self.plt3d.scatter3D(x, y, z, color="green", alpha=1)
+        self.draw_positions_on_color_image()
+
+        cv2.destroyAllWindows()
+        self.draw_positions_on_color_image()
+        cv2.imshow("positions", self.color_image)
+        plt.show(block=True)
+
 
     def quadratic_constants(self, points):
         x, y, z = [], [], []
@@ -230,9 +266,9 @@ class CameraControl():
         print(self.positions)
         self.plt3d.scatter3D(x, y, z, color = "green", alpha= 0.2)
         #print(positions)
-        x = np.array(x)
         y = np.array(y)
-        z = np.polyfit(x, y, 2)
+        z = np.array(z)
+        q = np.polyfit(y, z, 2)
 
         #3 punten
         p0, p1, p2 = points
@@ -248,7 +284,26 @@ class CameraControl():
         b = (g - a * k) / h
         c = y0 - a * x0 * x0 - b * x0
 
-        return a, b, c, z[0], z[1], z[2]
+        return a, b, c, q[0], q[1], q[2]
+
+    def straight_constants(self):
+        x, y, z = [], [], []
+        for i in range(0, len(self.positions)):
+            x.append(self.positions[i][0])
+            y.append(self.positions[i][1])
+            z.append(self.positions[i][2])
+        #print(self.positions)
+        self.plt3d.scatter3D(x, y, z, color="green", alpha=0.2)
+        # print(positions)
+        x = np.array(x)
+        y = np.array(y)
+        z = np.array(z)
+
+        q = np.polyfit(y, z, 1)
+        a, b = q
+        p = np.polyfit(y, x, 1)
+        c, d = p
+        return a, b, c, d
 
     def afstand_punt_vlak(self, normal, d, point):
         # afstand = | ap + bq + cr + d | / √(a2 + b2 + c2).
@@ -276,6 +331,7 @@ class CameraControl():
         # dxf1 = normal0[0]
         # dyf1 = normal0[1]
         # dzf1 = normal0[2]
+        #kwadratisch
         # f2 = normal1[0]*x + normal1[1]*y + normal1[2] * z - d1
         # dxf2 = normal1[0]
         # dyf2 = normal1[1]
@@ -284,30 +340,55 @@ class CameraControl():
         # dxf3 = 2*qc[0] * x + qc[1]
         # dyf3 = -1
         # dzf3 = 0
+        #rechte
+        # f2 = qc[2]* y +qc[3] - x
+        # dxf3 = -1
+        # dyf3 = qc[2]
+        # dzf3 = 0
+        # f3 = qc[0] * y + qc[1] - z
+        # dxf3 = 0
+        # dyf3 = qc[0]
+        # dzf3 = -1
 
         iterations_store = []
         error_store = []
         self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='o', )
-
         i = 0
-        n = 10
-        while i < n:
-            # print(i)
-            # print(X)
-            if i > 1:
-                self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='.', alpha= 0.3)
-            i = i + 1
-            iterations_store.append(i)
-            F = []
-            F = np.array([[normal0[0] * X[0][0] + normal0[1] * X[1][0] + normal0[2] * X[2][0] + d0,
-                           normal1[0] * X[0][0] + normal1[1] * X[1][0] + normal1[2] * X[2][0] + d1,
-                           qc[0] * X[0][0] * X[0][0] + qc[1] * X[0][0] + qc[2] - X[1][0]]])
-            F = F.transpose()
-            error_store.append(np.linalg.norm(F))
-            J = np.array([[normal0[0], normal0[1], normal0[2]],
-                          [normal1[0], normal1[1], normal1[2]],
-                          [2 * qc[0] * X[0][0] + qc[1], -1, 0]])
-            X = X - np.linalg.inv(J).dot(F)
+        n = 30
+
+        if self.speltype == 2:
+            while i < n:
+                if i > 1:
+                    self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='.', alpha= 0.3)
+                i = i + 1
+                iterations_store.append(i)
+                F = []
+                F = np.array([[normal0[0] * X[0][0] + normal0[1] * X[1][0] + normal0[2] * X[2][0] + d0,
+                               normal1[0] * X[0][0] + normal1[1] * X[1][0] + normal1[2] * X[2][0] + d1,
+                               qc[0] * X[0][0] * X[0][0] + qc[1] * X[0][0] + qc[2] - X[1][0]]])
+                F = F.transpose()
+                error_store.append(np.linalg.norm(F))
+                J = np.array([[normal0[0], normal0[1], normal0[2]],
+                              [normal1[0], normal1[1], normal1[2]],
+                              [2 * qc[0] * X[0][0] + qc[1], -1, 0]])
+                X = X - np.linalg.inv(J).dot(F)
+        elif self.speltype == 1:
+            while i < n:
+                if i > 1:
+                    self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='.', alpha=0.3)
+                i = i + 1
+                iterations_store.append(i)
+                F = []
+                F = np.array([[normal0[0] * X[0][0] + normal0[1] * X[1][0] + normal0[2] * X[2][0] + d0,
+                               qc[2] * X[1][0] + qc[3] - X[0][0],
+                               qc[0] * X[1][0] + qc[1] - X[2][0]]])
+                F = F.transpose()
+                error_store.append(np.linalg.norm(F))
+                J = np.array([[normal0[0], normal0[1], normal0[2]],
+                              [-1, qc[2], 0],
+                              [0, qc[0], -1]])
+                X = X - np.linalg.inv(J).dot(F)
+
         #print("Newton :")
         self.X = X
         #print(X)
@@ -316,7 +397,6 @@ class CameraControl():
         #plt.xlabel("itarations")
         #plt.ylabel("error")
         #plt.plot(iterations_store, error_store)
-        self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='x', )
         return X
 
         #return x,y,z
@@ -376,33 +456,53 @@ class CameraControl():
         #zz1 = (-normal1[0] * xx1 - normal1[1] * yy1 - d1) * 1. / normal1[2]
         #lt3d.plot_surface(xx1, yy1, zz1, color="red", alpha=0.15)
 
-        #y = ax^2 + bx + c
-        qc = self.quadratic_constants(trajectory_points)
-        a, b, c, g, h, l = qc
+        if self.speltype == 2:
+            #y = ax^2 + bx + c
+            qc = self.quadratic_constants(trajectory_points)
+            a, b, c, g, h, l = qc
 
-        #plotting quadratic function
-        x, y, z, xp, yp = [], [], [], [], []
-        for j in range(min(x_coo), max(x_coo), 10):
-            x.append(j)
-            xp.append(j)
-            y.append(a * j * j + b * j + c)
-            yp.append(g*j*j+ h*j+ l)
-            z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
-            #barbaarse manier om nulpunt te vinden
-            #if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 1000):
-                #print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
-                #print(x[-1], y[-1], z[-1])
-                #plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
-        self.plt3d.plot(x, y, z, color="red", alpha= 0.3)
-        self.plt3d.plot(xp, yp, z, color="green", alpha= 0.3)
+            #plotting quadratic function
+            x, y, z, xp, yp, zp = [], [], [], [], [], []
+            for j in range(min(x_coo), max(x_coo), 10):
+                x.append(j)
+                xp.append((-normal1[1] * j - normal1[2] * (g * j * j + h * j + l) - d1) * 1. / normal1[0])
+                y.append(a * j * j + b * j + c)
+                yp.append(j)
+                z.append((-normal1[0] * j - normal1[1] * (a * j * j + b * j + c) - d1) * 1. / normal1[2])
+                zp.append(g*j*j+ h*j+ l)
+                #barbaarse manier om nulpunt te vinden
+                #if (afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])) < 1000):
+                    #print(afstand_punt_vlak(normal0, d0, (x[-1], y[-1], z[-1])))
+                    #print(x[-1], y[-1], z[-1])
+                    #plt3d.scatter3D(x[-1], y[-1], z[-1], color="blue", marker='x', )
+            self.plt3d.plot(xp, yp, zp, color="green", alpha= 0.3)
 
-        #3punten :
-        self.intersection = self.Newton(normal0, d0, normal1, d1, qc, "red")
-        #alle punten :
-        self.Newton(normal0, d0, normal1, d1, (qc[3], qc[4], qc[5]), "green")
+            # 3punten :
+            self.intersection = self.Newton(normal0, d0, normal1, d1, qc, "red")
+            # alle punten :
+            self.Newton(normal0, d0, normal1, d1, (qc[3], qc[4], qc[5]), "green")
+
+        elif self.speltype ==1:
+            a, b , c, d = self.straight_constants()
+            x, y, z = [], [], []
+            for j in range(min(y_coo), max(y_coo), 10):
+                x.append(c*j + d)
+                y.append(j)
+                z.append(a*j + b)
+            self.intersection = self.Newton(normal0, d0, normal1, d1, (a, b, c, d), "red")
+
+        self.plt3d.plot(x, y, z, color="red", alpha=0.3)
+        self.plt3d.scatter3D(self.intersection[0][0], self.intersection[1][0], self.intersection[2][0], color="red", marker='x', )
+
+
+
 
         #cv2.destroyAllWindows()
+        self.draw_positions_on_color_image()
         plt.show(block = True)
+
+
+
 
     def procces_data(self):
         self.trajectory_points = []
@@ -422,6 +522,7 @@ class CameraControl():
 
         # plotting the target plane the plane of the trow and the trajectory of the trow
         self.planes_quadratic_intersect(self.target_points, self.trajectory_points)
+
 
     def get_distace_to_intersect(self):
         #print(self.target_points)
@@ -452,12 +553,17 @@ class CameraControl():
 
                 hsv_frame = cv2.cvtColor(self.color_image, cv2.COLOR_BGR2HSV)
 
-                #plt.imshow(hsv_frame)
-                #plt.show()
+                if self.calibreren:
+                    plt.imshow(hsv_frame)
+                    plt.show()
 
                 # Blue color
-                low_orange = np.array([1, 200, 150])
-                high_orange = np.array([15, 255, 200])
+                if self.place is "kot":
+                    low_orange = np.array([1, 1, 1])
+                    high_orange = np.array([170, 100, 30])
+                else:
+                    low_orange = np.array([1, 200, 150])
+                    high_orange = np.array([15, 255, 200])
                 orange_mask = cv2.inRange(hsv_frame, low_orange, high_orange)
 
                 #blue_mask = cv2.erode(blue_mask, self.kernel, iterations=1)
@@ -467,6 +573,7 @@ class CameraControl():
 
                 self.get_target(orange_mask, self.blue)
 
+                self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
 
                 #functie van andreas implementeren
@@ -477,15 +584,29 @@ class CameraControl():
                         self.finalyzing_target()
                         print("target points :")
                         print(self.target_points)
+                        self.positions = []
+                        self.positions_on_color = []
                         cv2.destroyAllWindows()
                         break
                     else:
-                        print("niet genoeg punten jong rustig")
-                        self.target_point1 = []
-                        self.target_point2 = []
-                        self.target_point3 = []
+                        print("niet genoeg punten, rustig jong het komt goed nog even wachten # = " + str(min(len(self.target_point1), len(self.target_point2), len(self.target_point3))))
+                        print("target point1 : " + str(self.target_point1))
+                        print("target point2 : " + str(self.target_point2))
+                        print("target point3 : " + str(self.target_point3))
+                        print("total : " + str(self.target_points))
                 if cv2.waitKey(1) & 0xFF == ord('s'):
-                    self.plot_poitions()
+                    if len(self.positions) != []:
+                        self.plot_poitions()
+                    else:
+                        print("not enough points to plot trow again")
+                if cv2.waitKey(1) & 0xFF == ord('f'):
+                    self.target_point1 = []
+                    self.target_point2 = []
+                    self.target_point3 = []
+                    self.target_points = [self.target_point1, self.target_point2, self.target_point3]
+                    self.positions = []
+                    self.positions_on_color = []
+                    print("reset")
 
             while self.state.current_state is "getting_data":
                 frames = self.pipeline.wait_for_frames()
@@ -499,36 +620,62 @@ class CameraControl():
 
                 hsv_frame = cv2.cvtColor(self.color_image, cv2.COLOR_BGR2HSV)
 
-                low_orange = np.array([1, 200, 150])
-                high_orange = np.array([15, 255, 200])
+                if self.calibreren:
+                    plt.imshow(hsv_frame)
+                    plt.show()
+
+                if self.place is "kot":
+                    low_orange = np.array([1, 1, 1])
+                    high_orange = np.array([170, 100, 30])
+                else:
+                    low_orange = np.array([1, 200, 150])
+                    high_orange = np.array([15, 255, 200])
 
                 orange_mask = cv2.inRange(hsv_frame, low_orange, high_orange)
-                orange_mask = cv2.erode(orange_mask, self.kernel, iterations=2)
+                #orange_mask = cv2.erode(orange_mask, self.kernel, iterations=1)
                 #orange_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, self.kernel)
-                orange_mask = cv2.dilate(orange_mask, self.kernel, iterations=4)
+                orange_mask = cv2.dilate(orange_mask, self.kernel, iterations=10)
                 # posible gousian blur for tracking
 
                 self.get_bal(orange_mask, self.green)
 
                 cv2.imshow("green_mask", orange_mask)
+                self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
 
                 #functie van andreas implementeren
                 if cv2.waitKey(1) & 0xFF == ord(' '):
-                    if len(self.positions) > 2:
+                    if len(self.positions) > 2 and any(i != [] for i in self.target_points):
                         self.procces_data()
                         self.positions = []
+                        self.positions_on_color = []
                         cv2.destroyAllWindows()
                         return self.get_distace_to_intersect()
+                    elif any(i == [] for i in self.target_points):
+                        print("er zijn geen target points gevonden")
                     else:
-                        print("not enough points trow again")
+                        print("not enough points to procces trow again")
                         print(self.positions)
                         self.positions = []
+                        self.positions_on_color = []
                 if cv2.waitKey(1) & 0xFF == ord('s'):
-                    self.plot_poitions()
+                    if len(self.positions) != []:
+                        self.plot_poitions()
+                    else:
+                        print("not enough points to plot trow again")
+                if cv2.waitKey(1) & 0xFF == ord('f'):
+                    self.positions = []
+                    self.positions_on_color = []
+                    print("reset")
         finally:
-            print("fin")
+            print("___________________________________________________________")
 
     def stop_pipline(self):
         self.pipeline.stop()
 
+cam = CameraControl()
+cam.run_code("getting_target")
+while True:
+    print(cam.run_code("getting_data"))
+print("done")
+cam.stop_pipline()
