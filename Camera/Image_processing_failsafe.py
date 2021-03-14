@@ -4,6 +4,7 @@ import cv2
 import time
 import math
 import matplotlib.pyplot as plt
+from sty import fg
 from pcserial.pcserial import *
 
 
@@ -534,7 +535,7 @@ class CameraControl():
 
     def run_code(self, wanted_state):
         try:
-            print("___________________________________________________________Camera___________________________________________________________")
+            print(fg.li_cyan + "___________________________________________________________Camera___________________________________________________________")
             self.state.current_state = wanted_state
 
             while self.state.current_state is "getting_target" :
@@ -665,7 +666,7 @@ class CameraControl():
                     self.positions_on_color = []
                     print("reset")
         finally:
-            print("____________________________________________________________________________________________________________________________")
+            print("____________________________________________________________________________________________________________________________" + fg.rs)
 
     def stop_pipline(self):
         self.pipeline.stop()
