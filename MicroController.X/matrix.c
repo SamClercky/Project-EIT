@@ -6,6 +6,11 @@ uint8_t Matrix_ScanButtons() {
 	// set all to LOW
 	mbtn11_SetLow();
 	mbtn12_SetLow();
+
+	// ensure pullup
+	mbtn21_SetPullup();
+	mbtn22_SetPullup();
+
 	uint8_t matrixState = 0;
 
 	// Read first row

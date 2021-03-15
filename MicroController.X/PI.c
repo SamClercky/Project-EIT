@@ -35,11 +35,9 @@ void PI_SetKi(float value){
 }
 
 void PI(void) {
-    sensorHeight = (uint8_t) (ADC_GetConversionResult() >> 8); //resultaat van ADC
+	//printf("Hello from PI");
     
-    //Hier dient nog code toegevoegd te worden
-    
-    PWM5_LoadDutyValue((uint8_t) dutycycle); // output pwm signaal voor hoogte
+    PWM5_LoadDutyValue((uint8_t) setpoint);
 }
 
 /**

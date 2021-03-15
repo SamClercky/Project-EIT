@@ -41,9 +41,7 @@ void main(void) {
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
 
-    // Initialiseer de hoogtemeting
-    ADC_SelectChannel(Hoogtesensor);
-    ADC_StartConversion();
+    // Initialiseer
     TMR2_Initialize();
     TMR2_StartTimer();
         

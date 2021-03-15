@@ -51,7 +51,7 @@ class PcSerial:
             self._writeToPort(b"B")
             clickedBtns = int(self._port.readline().rstrip())
             
-            needUpdate = (self._clickedBtns != 0 and
+            needUpdate = (self._clickedBtns != 0 or
                     self._clickedBtns != clickedBtns)
             self._clickedBtns = clickedBtns
 
