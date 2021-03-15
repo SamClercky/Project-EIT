@@ -4,6 +4,7 @@ import cv2
 import time
 import math
 import matplotlib.pyplot as plt
+from pcserial.pcserial import *
 
 class CameraControl():
 
@@ -21,6 +22,7 @@ class CameraControl():
             else:
                 self.current_state = self.states[self.states.index(self.current_state) + 1]
 
+    pcs = PcSerial()
     state = STATE("getting_target")
 
     green = [[0, 255, 0], "green"]
@@ -54,6 +56,9 @@ class CameraControl():
     depth_profile = rs.video_stream_profile(profile.get_stream(rs.stream.depth))
     depth_intrinsics = depth_profile.get_intrinsics()
 
+    align_to = rs.stream.color
+    align = rs.align(align_to)
+
     kernel = np.ones((5, 5), np.uint8)
 
     plt3d = 0
@@ -61,6 +66,11 @@ class CameraControl():
     color_image = 0
     depth_image = 0
 
+    def distance_between_points(self, point1, point2):
+        sum = 0
+        for i in range(0,3):
+            sum = sum + (point1[i]-point2[i])*(point1[i]-point2[i])
+        return math.sqrt(sum)
 
     def get_target(self, Mask, colour):
 
@@ -76,19 +86,24 @@ class CameraControl():
                     # Get the radius of the enclosing circle around the found contour
                     ((x, y), radius) = cv2.minEnclosingCircle(cnt)
                     # Draw the circle around the contour
-                    cv2.circle(color_image, (int(x - radius / 2), int(y)), int(radius / 2), colour[0], 2)
+                    cv2.circle(color_image, (int(x), int(y)), int(radius), colour[0], 2)
                     # Get the moments to calculate the center of the contour
                     M = cv2.moments(cnt)
                     center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
-                    diepte = (depth_image[center[1]][center[0]])
 
+                    x, y = center
+                    mask = CameraControl.depth_image[x - 3:x + 3, y - 3:y + 3]
+                    diepte = np.mean(mask)
 
                     point = rs.rs2_deproject_pixel_to_point(self.depth_intrinsics, [x, y], diepte)
                     #print(point)
 
-                    self.target_points[i].append(point)
 
-                    centroid = str(point)
+                    self.target_points[i].append(point)
+                    if any([np.isnan(value) for value in point]) is False:
+                        centroid = f"{int(point[0])},{int(point[1])},{int(point[2])}"
+                    else:
+                        centroid = "nan"
 
                     cv2.putText(color_image, centroid, center, cv2.FONT_HERSHEY_SIMPLEX,
                                 0.5, (255, 255, 255), 2, cv2.LINE_AA)
@@ -145,12 +160,20 @@ class CameraControl():
             M = cv2.moments(cnt)
             if M['m00'] != 0:
                 center = (int(M['m10'] / M['m00']), int(M['m01'] / M['m00']))
-                diepte = (depth_image[center[1]][center[0]])
+                x,y = center
 
+                mask = CameraControl.depth_image[x-3:x+3,y-3:y+3]
+                diepte = np.mean(mask)
 
                 point = rs.rs2_deproject_pixel_to_point(self.depth_intrinsics, [x, y], diepte)
-                #print(point)
-                positions.append(point)
+                print(point , diepte)
+
+                if len(positions) >= 1 and self.distance_between_points(point, positions[-1]) > 100 :
+                    #print(self.distance_between_points(point, positions[-1]))
+                    positions.append(point)
+                elif len(positions) == 0:
+                    positions.append(point)
+
 
                 centroid = str(point)
 
@@ -189,6 +212,7 @@ class CameraControl():
             x.append(positions[i][0])
             y.append(positions[i][1])
             z.append(positions[i][2])
+        print(positions)
         self.plt3d.scatter3D(x, y, z, color = "green", alpha= 0.2)
         #print(positions)
         x = np.array(x)
@@ -197,8 +221,8 @@ class CameraControl():
         #print(x)
         #print(y)
         z = np.polyfit(x, y, 2)
-        print("polyfit : ")
-        print(z)
+        #print("polyfit : ")
+        #print(z)
 
         p0, p1, p2 = points
         x0, y0, z0 = p0
@@ -275,14 +299,14 @@ class CameraControl():
                           [normal1[0], normal1[1], normal1[2]],
                           [2 * qc[0] * X[0][0] + qc[1], -1, 0]])
             X = X - np.linalg.inv(J).dot(F)
-        print("Newton :")
+        #print("Newton :")
         self.X = X
-        print(X)
-        plt.figure()
-        plt.legend("newton rapsody for calculating intersection")
-        plt.xlabel("itarations")
-        plt.ylabel("error")
-        plt.plot(iterations_store, error_store)
+        #print(X)
+        #plt.figure()
+        #plt.legend("newton rapsody for calculating intersection")
+        #plt.xlabel("itarations")
+        #plt.ylabel("error")
+        #plt.plot(iterations_store, error_store)
         self.plt3d.scatter3D(X[0][0], X[1][0], X[2][0], color=collor, marker='x', )
         return X
 
@@ -373,9 +397,8 @@ class CameraControl():
         self.Newton(normal0, d0, normal1, d1, (qc[3], qc[4], qc[5]), "green")
 
         #cv2.destroyAllWindows()
-        plt.show(block = False)
-        plt.pause(2)
-        plt.close('all')
+        plt.show(block = True)
+
 
     def procces_data(self):
         self.trajectory_points = []
@@ -414,62 +437,74 @@ class CameraControl():
 
     def run_code(self, wanted_state):
         try:
-            global depth_image, color_image, positions
+            global color_image, positions
+            positions = []
 
             self.state.current_state = wanted_state
 
             while self.state.current_state is "getting_target" :
 
                 frames = self.pipeline.wait_for_frames()
+                aligned_frames = self.align.process(frames)
 
-                depth_frame = frames.get_depth_frame()
-                color_frame = frames.get_color_frame()
+                depth_frame = aligned_frames.get_depth_frame()
+                color_frame = aligned_frames.get_color_frame()
 
 
-                depth_image = np.asanyarray(depth_frame.get_data())
+                CameraControl.depth_image = np.asanyarray(depth_frame.get_data())
 
                 color_image = np.asanyarray(color_frame.get_data())
 
-                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(CameraControl.depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
                 hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
 
-                # plt.imshow(hsv_frame)
-                # plt.show()
+                #plt.imshow(hsv_frame)
+                #plt.show()
 
                 # Blue color
-                # low_blue = np.array([90, 250, 70])
-                # high_blue = np.array([130, 255, 130])
-                # blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
+                low_blue = np.array([1, 200, 150])
+                high_blue = np.array([15, 255, 200])
+                blue_mask = cv2.inRange(hsv_frame, low_blue, high_blue)
 
-                lower_red = np.array([0, 120, 70])
-                upper_red = np.array([10, 255, 255])
-                mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                #lower_red = np.array([0, 120, 70])
+                #upper_red = np.array([10, 255, 255])
+                #mask1 = cv2.inRange(hsv_frame, lower_red, upper_red)
                 # Range for upper range
-                lower_red = np.array([170, 120, 70])
-                upper_red = np.array([180, 255, 255])
-                mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
+                #lower_red = np.array([170, 120, 70])
+                #upper_red = np.array([180, 255, 255])
+                #mask2 = cv2.inRange(hsv_frame, lower_red, upper_red)
                 # Generating the final mask to detect red color
-                blue_mask = mask1 + mask2
+                #blue_mask = mask1 + mask2
 
-                # blue_mask = cv2.erode(blue_mask, kernel, iterations=1)
-                blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, self.kernel)
-                blue_mask = cv2.dilate(blue_mask, self.kernel, iterations=3)
+                #blue_mask = cv2.erode(blue_mask, self.kernel, iterations=1)
+                #blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, self.kernel)
+                blue_mask = cv2.dilate(blue_mask, self.kernel, iterations=10)
                 cv2.imshow("blue mask", blue_mask)
                 # blue = cv2.bitwise_and(frame, frame, mask=blue_mask)
                 self.get_target(blue_mask, self.blue)
 
                 cv2.imshow("Color Image", color_image)
 
+
                 #functie van andreas implementeren
+                #self.pcs.poll()
                 if cv2.waitKey(1) & 0xFF == ord(' '):
-                    print("finalyzing_target")
-                    self.finalyzing_target()
-                    print("target points :")
-                    print(self.target_points)
-                    positions = []
-                    cv2.destroyAllWindows()
-                    break
+                    if min(len(self.target_point1), len(self.target_point2), len(self.target_point3)) > 50:
+
+                        print("finalyzing_target")
+                        self.finalyzing_target()
+                        print("target points :")
+                        print(self.target_points)
+                        positions = []
+                        cv2.destroyAllWindows()
+                        break
+                    else:
+                        print("niet genoeg punten jong rustig")
+                        self.target_point1 = []
+                        self.target_point2 = []
+                        self.target_point3 = []
+
 
 
             while self.state.current_state is "getting_data":
@@ -479,19 +514,19 @@ class CameraControl():
                 depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
 
-                depth_image = np.asanyarray(depth_frame.get_data())
+                CameraControl.depth_image = np.asanyarray(depth_frame.get_data())
 
                 color_image = np.asanyarray(color_frame.get_data())
 
-                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+                depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(CameraControl.depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
                 hsv_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
 
                 # draw_positions() kapot
 
                 # green color
-                low_green = np.array([55, 55, 120])
-                high_green = np.array([85, 100, 150])
+                low_green = np.array([1, 200, 150])
+                high_green = np.array([15, 255, 200])
 
                 # lower_red = np.array([0, 120, 70])
                 # upper_red = np.array([10, 255, 255])
@@ -504,11 +539,11 @@ class CameraControl():
                 # green_mask = mask1 + mask2
 
                 green_mask = cv2.inRange(hsv_frame, low_green, high_green)
-                # green_mask = cv2.erode(green_mask, kernel, iterations=2)
+                green_mask = cv2.erode(green_mask, self.kernel, iterations=2)
                 # cv2.imshow("blue mask_1", green_mask)
-                green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, self.kernel)
+                #green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, self.kernel)
                 # cv2.imshow("blue mask_2", green_mask)
-                green_mask = cv2.dilate(green_mask, self.kernel, iterations=3)
+                green_mask = cv2.dilate(green_mask, self.kernel, iterations=4)
                 # gousian blur for tracking
                 self.get_bal(green_mask, self.green)
 
@@ -516,6 +551,7 @@ class CameraControl():
                 cv2.imshow("Color Image", color_image)
 
 
+                #0xFF == ord(' ')
                 #functie van andreas implementeren
                 if cv2.waitKey(1) & 0xFF == ord(' '):
                     if len(positions) > 2:
@@ -534,8 +570,7 @@ class CameraControl():
 
 cam = CameraControl()
 cam.run_code("getting_target")
-print("afstand van de target punten tot de intersect run 1 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 2 : " + str(cam.run_code("getting_data")))
-print("afstand van de target punten tot de intersect run 3 : " + str(cam.run_code("getting_data")))
-print("klaar")
-cam.stop_pipline()
+cam.run_code("getting_data")
+cam.run_code("getting_data")
+cam.run_code("getting_data")
+cam.run_code("getting_data")

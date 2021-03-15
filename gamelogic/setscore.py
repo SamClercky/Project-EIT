@@ -16,8 +16,8 @@ class MyScore():
                     x[0]=i+1
                 i+=1
         for x in newscore:
-            if 35-x[0]*5>= 0:
-                arrayscale.append(35-x[0]*5)
+            if 40-x[0]*5>= 0:
+                arrayscale.append(40-x[0]*5)
             else:
                 arrayscale.append(0)
         print(newscore)
@@ -27,8 +27,3 @@ class MyScore():
         for i in range(1,len(newscore)+1):
             scoresheet.get(i)[1]=scoresheet.get(i)[1]+newscore[i-1]
              
-
-#score = MyScore()
-#dictt = {1 : ["Player 1", 100], 2 : ["Player 2", 100]}
-#score.suddendeath(dictt)
-#print(score.winners)
