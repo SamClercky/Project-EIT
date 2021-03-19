@@ -485,6 +485,7 @@ class CameraControl():
                 self.get_target(blue_mask, self.blue)
 
                 cv2.imshow("Color Image", color_image)
+                cv2.imshow("hsv image", hsv_frame)
 
 
                 #functie van andreas implementeren
