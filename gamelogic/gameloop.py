@@ -32,7 +32,8 @@ while(not game.end):
         
         
 
-    newscore = score.scale(newscore)
+    #newscore = score.scale(newscore)
+    newscore = score.demoscale(newscore)
     score.update(game.scoresheet, newscore)
     print("\n\nScoreboard\n")
     for i in range(1,len(game.scoresheet)+1):
