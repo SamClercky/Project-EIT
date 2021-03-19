@@ -10,7 +10,6 @@ def on_release(key):
     if key == Key.esc:
         # Stop listener
         return False 
-
 game = GameState()
 score = MyScore()
 cam = CameraControl()
@@ -26,6 +25,10 @@ while(not game.end):
     newscore=[]
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+" to throw.")
+
+        for j in range(0,4):
+            pc.set_led_state(j,False)
+        pc.set_led_state((i-1)%4),True)
         
         pcs.set_height(height[i-1])
         
@@ -48,6 +51,7 @@ while(not game.end):
     
     print("\n\nScoreboard\n")
     for i in range(1,len(game.scoresheet)+1):
+        pcs.set_led()
         print(game.scoresheet.get(i)[0]+": "+str(game.scoresheet.get(i)[1])+"\n")
     n+=1
     if(n==2):
