@@ -62,9 +62,9 @@ class MyScore():
         array=[]
         for i in range(1,len(scoresheet)+1):
             if(end and scoresheet.get(1)[1]>100):
-                array.append(int(((scoresheet.get(i)[1]-100)/100)*80))
+                array.append(int((((scoresheet.get(i)[1]-100)/100)*50))+10)
             else:
-                array.append(int((scoresheet.get(i)[1]/100)*80))
+                array.append(int(((scoresheet.get(i)[1]/100)*50))+10)
 
         print(array)
         return array
