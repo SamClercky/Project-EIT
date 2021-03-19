@@ -41,11 +41,11 @@ while(not game.end):
         
 
     #newscore = score.scale(newscore)
-    newscore = score.demoscale(newscore)
+    newscore = score.scale(newscore)
     score.update(game.scoresheet, newscore)
     
     height=score.heightscale(game.scoresheet,game.end)
-    
+    light = score.lightscale(game.scoresheet, game.end)
     
     print("\n\nScoreboard\n")
     for i in range(1,len(game.scoresheet)+1):
