@@ -88,7 +88,7 @@ class CameraControl():
         cv2.putText(self.color_image, "-press button '2' for plotting positions (positions aren't thrown away)"
                     , (120, 35), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
-        cv2.putText(self.color_image, "-press button '3' pay respect and reset found points"
+        cv2.putText(self.color_image, "-press button '4' pay respect and reset found points"
                     , (120, 50), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
@@ -575,8 +575,8 @@ class CameraControl():
                 cv2.imshow("Color Image", self.color_image)
                 cv2.imshow("hsv_image", hsv_frame)
 
-                if self.look_at_buttons%20 == 0:
-                    self.look_at_buttons = 0
+                if self.look_at_buttons%50 == 0:
+                    self.look_at_buttons = 1
                     #cv2.waitKey(1) & 0xFF == ord(' ')
                     if self.pcs.poll()and self.pcs.get_btn_state()[0]:
                         if min(len(self.target_point1), len(self.target_point2), len(self.target_point3)) > 50:
@@ -650,8 +650,8 @@ class CameraControl():
                 self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
 
-                if self.look_at_buttons%20 == 0:
-                    self.look_at_buttons = 0
+                if self.look_at_buttons%50 == 0:
+                    self.look_at_buttons = 1
                     #functie van andreas implementeren
                     if self.pcs.poll()and self.pcs.get_btn_state()[0]:
                         if len(self.positions) > 2 and any(i != [] for i in self.target_points):
