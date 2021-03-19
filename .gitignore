@@ -4,3 +4,5 @@
 **/build/
 **/mcc_generated_files
 **/__pycache__
+/initial-examples/Ledstrip_Loodstrip_XC8_v2.31.X/Ledstrip_Loodstrip_XC8_v2.31.X/build/
+/initial-examples/Ledstrip_Loodstrip_XC8_v2.31.X/Ledstrip_Loodstrip_XC8_v2.31.X/dist/

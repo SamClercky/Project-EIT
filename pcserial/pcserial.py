@@ -11,7 +11,7 @@ from typing import Tuple
 class PcSerial:
     _port: serial.Serial
     _clickedBtns = 0
-    _ledState = 0
+    #_ledState = 0
     _verbose = False
 
     def __init__(self, port: str = None, verbose = False):
@@ -67,26 +67,26 @@ class PcSerial:
             self._clickedBtns & 0b1000 != 0
             )
 
-    def set_led_state(self, ledIndex: int, status: bool):
+    def set_led_state(self, ledIndex: int):
         """ledIndex: [0,1,2,3]"""
         if self._port == None:
             return
 
         self._resetPort()
 
-        ledIndex = _clamp(ledIndex, 0, 3)
+        ledIndex = _clamp(ledIndex, 0, 60)
         
         # Update global status
-        if status:
-            self._ledState |= 1<<ledIndex
-        else:
-            self._ledState &= ~(1<<ledIndex)
+        #if status:
+        #    self._ledState |= 1<<ledIndex
+        #else:
+        #    self._ledState &= ~(1<<ledIndex)
 
         # Schrijf weg
-        self._writeToPort(f"L{self._ledState}".encode("ascii"))
+        self._writeToPort(f"L{ledIndex}".encode("ascii"))
         self._port.readline() # Read echo
         if self._verbose:
-            print(f"Writing to device: L{self._ledState}")
+            print(f"Writing to device: L{ledIndex}")
     
     def set_height(self, height: int):
         if self._port == None:

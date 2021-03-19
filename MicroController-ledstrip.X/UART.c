@@ -88,7 +88,6 @@ bool Execute_Command(char* data) {
 			{
 				// set LED on breadboard
 				uint8_t newLedStatus = (uint8_t) atoi(data+1); // receive new LED flag
-				printf("%d\n", newLedStatus); // echo data back
 				LEDSTRIP_Set_Locations(newLedStatus);
 				printf("%d\n", newLedStatus); // echo data back
 				break;

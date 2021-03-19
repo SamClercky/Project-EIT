@@ -26,6 +26,7 @@
 void main(void) {
     // initialize the device
     SYSTEM_Initialize();
+    spi_master_open(ledstrip);
 
     // When using interrupts, you need to set the Global and Peripheral Interrupt Enable bits
     // Use the following macros to:
@@ -53,9 +54,9 @@ void main(void) {
             TMR0_Initialize();
 
             PI();
-            UARTCommunication();
-			LEDSTRIP_Draw_Frames();
-            // NIET ONDER 60 GAAN
+	    UARTCommunication();
+	    LEDSTRIP_Draw_Frames();
+	    // NIET ONDER 60 GAAN
             //PWM5_LoadDutyValue((uint8_t) 120);
         }
     }

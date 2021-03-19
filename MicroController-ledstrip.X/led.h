@@ -8,13 +8,16 @@
 #ifndef LEDSTRIP_H
 #define	LEDSTRIP_H
 
+#include <xc.h>
+#include "mcc_generated_files/mcc.h"
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
 void LEDSTRIP_Draw_Frames();
 
-void LEDSTRIP_Set_Locations(char flag);
+void LEDSTRIP_Set_Locations(uint8_t flag);
 
 #ifdef	__cplusplus
 }
