@@ -45,5 +45,17 @@ class MyScore():
                 arrayscale.append(55-x[0]*5)
             else:
                 arrayscale.append(0)
-        return arrayscale 
+        return arrayscale
+    
+    def heightscale(self, scoresheet, end):
+        array=[]
+        if(end):
+            for x in array:
+                x-=100
+        
+        for i in range(1,len(scoresheet)+1):
+            array.append=((scoresheet.get(i)[1]/100)*175)+80
+        
+        return array
+
                 

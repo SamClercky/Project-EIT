@@ -4,7 +4,7 @@ from pynput.keyboard import Key, Listener
 from Camera.Image_processing_failsafe import *
 from playsound import playsound 
 
-#line 7-10 from the source https://pythonhosted.org/pynput/keyboard.html
+#line 8-11 from the source https://pythonhosted.org/pynput/keyboard.html
 def on_release(key):                                                                    
     if key == Key.esc:
         # Stop listener
@@ -13,6 +13,7 @@ def on_release(key):
 game = GameState()
 score = MyScore()
 cam = CameraControl()
+height=None
 n=0
 game.start()
 
@@ -24,22 +25,30 @@ while(not game.end):
     newscore=[]
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+" to throw.")
+        
+        height=score.heightscale(game.scoresheet,game.end)
+        
         with Listener(
             on_release=on_release) as listener:
                 listener.join()
         distance=min([abs(x) for x in cam.run_code("getting_data")])
         newscore.append(distance)
+
+
         
         
 
     #newscore = score.scale(newscore)
     newscore = score.demoscale(newscore)
     score.update(game.scoresheet, newscore)
+    
+    height=score.heightscale(game.scoresheet,game.end)
+    
     print("\n\nScoreboard\n")
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+": "+str(game.scoresheet.get(i)[1])+"\n")
     n+=1
-    if(n==3):
+    if(n==2):
         game.endstate(game.scoresheet)
 cam.stop_pipline()
 playsound("gamelogic/play.wav")      
