@@ -2,7 +2,8 @@ from gamelogic.setscore import *
 from gamelogic.gamestate import *
 from pynput.keyboard import Key, Listener
 from Camera.Image_processing_failsafe import *
-from playsound import playsound 
+from playsound import playsound
+from pcserial.pcserial import * 
 
 #line 8-11 from the source https://pythonhosted.org/pynput/keyboard.html
 def on_release(key):                                                                    
@@ -13,12 +14,12 @@ def on_release(key):
 game = GameState()
 score = MyScore()
 cam = CameraControl()
-height=None
+pcs = Pcserial()
 n=0
 game.start()
+height=score.heightscale(game.scoresheet,game.end)
 
-
-cam.run_code("getting_target")
+cam.run_code("getting_target",pcs)
 
 while(not game.end):
     print("\nRound "+str(n+1)+"\n\n")
@@ -26,12 +27,12 @@ while(not game.end):
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+" to throw.")
         
-        height=score.heightscale(game.scoresheet,game.end)
+        pcs.set_height(height[i-1])
         
         with Listener(
             on_release=on_release) as listener:
                 listener.join()
-        distance=min([abs(x) for x in cam.run_code("getting_data")])
+        distance=min([abs(x) for x in cam.run_code("getting_data",pcs)])
         newscore.append(distance)
 
 
@@ -44,6 +45,7 @@ while(not game.end):
     
     height=score.heightscale(game.scoresheet,game.end)
     
+    
     print("\n\nScoreboard\n")
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+": "+str(game.scoresheet.get(i)[1])+"\n")
@@ -51,4 +53,5 @@ while(not game.end):
     if(n==2):
         game.endstate(game.scoresheet)
 cam.stop_pipline()
+pcs.set_height(255)
 playsound("gamelogic/play.wav")      

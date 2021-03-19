@@ -3,10 +3,11 @@ from setscore import *
 from pynput.keyboard import Key, Controller
 from pynput.keyboard import Key, Listener
 from playsound import playsound 
-dictt = {1 : ["Player 1", 10], 2 : ["Player 2", 100], 3 : ["Player 3", 100]}
+dictt = {1 : ["Player 1", 100], 2 : ["Player 2", 120], 3 : ["Player 3", 130]}
 game = GameState()
 score = MyScore()
-array=[100,651321,651321,4656]
-dictt={1 : ["anass",100]}
+array=[100,651321,651321]
 test=[-10,-315]
-print(score.scale(array))
+score.update(dictt,score.scale(array))
+print(dictt)
+print(score.heightscale(dictt,True))
