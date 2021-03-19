@@ -573,7 +573,7 @@ class CameraControl():
 
                 self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
-                cv2.imshow(("hsv_image", hsv_frame))
+                cv2.imshow("hsv_image", hsv_frame)
 
                 if self.look_at_buttons%20 == 0:
                     self.look_at_buttons = 0
