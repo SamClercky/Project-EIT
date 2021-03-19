@@ -20,7 +20,6 @@ class MyScore():
                 arrayscale.append(40-x[0]*5)
             else:
                 arrayscale.append(0)
-        print(newscore)
         return arrayscale
 
     def update(self,scoresheet, newscore):
