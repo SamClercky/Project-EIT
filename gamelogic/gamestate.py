@@ -23,7 +23,7 @@ class GameState():
     """Will check if there's someone with a score equal to or higher than 100. If so then the winner will be printed in the console
     and the end variable will be set to true and the gameloop will break out of the while loop. If there's sudden death then 
     scoresheet will be replaced by the players going to the next round untill there's one winner"""
-    def endstate(self,scoresheet):
+    def endstate(self,scoresheet: dict):
         winners=[]
         losers=[]
         maxscore=0
