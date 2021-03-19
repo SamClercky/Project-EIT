@@ -28,7 +28,7 @@ class CameraControl():
 
     def __init__(self):
         # voor als ik op kot werk -> "kot"
-        self.place = "kot"
+        self.place = ""
         self.calibreren = False
         self.speltype = 1
         self.state = STATE("getting_target")
@@ -70,7 +70,6 @@ class CameraControl():
     pc = rs.pointcloud()                                                    # Point cloud object (Depth map --> 3D Points)
 
     def draw_positions_on_color_image(self):
-        print("drawing")
         for i in self.positions_on_color:
             cv2.circle(self.color_image, i[0], int(i[1]/150), (255, 153, 255))
 
@@ -86,7 +85,7 @@ class CameraControl():
             cv2.putText(self.color_image, "-press ' ' for getting score"
                         , (120, 20), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (255, 255, 255), 1, cv2.LINE_AA)
-        cv2.putText(self.color_image, "-press 's' for plotting positions (positions aren't thrown away)"
+        cv2.putText(self.color_image, "-press 'p' for plotting positions (positions aren't thrown away)"
                     , (120, 35), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.putText(self.color_image, "-press 'f' pay respect and reset found points"
@@ -184,6 +183,7 @@ class CameraControl():
                 x,y = center
 
                 mask = self.depth_image[y -3:y + 3, x - 3:x + 3]
+                #cv2.imshow("patch", mask)
                 depht = np.mean(mask)
 
                 point = rs.rs2_deproject_pixel_to_point(self.depth_intrinsics, [x, y], depht)
@@ -592,8 +592,9 @@ class CameraControl():
                         #print("target point2 : " + str(self.target_point2))
                         #print("target point3 : " + str(self.target_point3))
                         #print("total : " + str(self.target_points))
-                if cv2.waitKey(1) & 0xFF == ord('s'):
+                if cv2.waitKey(1) & 0xFF == ord('p'):
                     if len(self.positions) != []:
+                        print("plotting positions")
                         self.plot_poitions()
                     else:
                         print("not enough points to plot trow again")
@@ -637,6 +638,9 @@ class CameraControl():
 
                 self.get_bal(orange_mask, self.green)
 
+                self.draw_positions_on_color_image()
+
+
                 cv2.imshow("green_mask", orange_mask)
                 self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
@@ -656,8 +660,9 @@ class CameraControl():
                         print(self.positions)
                         self.positions = []
                         self.positions_on_color = []
-                if cv2.waitKey(1) & 0xFF == ord('s'):
+                if cv2.waitKey(1) & 0xFF == ord('p'):
                     if len(self.positions) != []:
+                        print("plotting positions")
                         self.plot_poitions()
                     else:
                         print("not enough points to plot trow again")
