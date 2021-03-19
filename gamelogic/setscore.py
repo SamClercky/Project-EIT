@@ -50,7 +50,7 @@ class MyScore():
         array=[]
     
         for i in range(1,len(scoresheet)+1):
-            if(end):
+            if(end and scoresheet.get(1)[1]>100):
                 array.append(int((((scoresheet.get(i)[1]-100)/100)*175)+80))
             else:
                 array.append(int(((scoresheet.get(i)[1]/100)*175)+80))
@@ -61,7 +61,7 @@ class MyScore():
     def lightscale(self,scoresheet: dict,end: bool):
         array=[]
         for i in range(1,len(scoresheet)+1):
-            if(end):
+            if(end and scoresheet.get(1)[1]>100):
                 array.append(int(((scoresheet.get(i)[1]-100)/100)*80))
             else:
                 array.append(int((scoresheet.get(i)[1]/100)*80))
