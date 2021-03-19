@@ -1,5 +1,5 @@
 class MyScore():
-    """The class function will update the scoresheet, scale the outputs for the score, for the height of the ball and led lights."""
+    """The class function will update the scoresheet and scale the outputs for the score, ball height, and height of led lights."""
     def scale(self, array: list):
         newscore=[]
         for x in array:
