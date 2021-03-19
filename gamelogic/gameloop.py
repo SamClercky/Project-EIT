@@ -14,7 +14,7 @@ def on_release(key):
 game = GameState()
 score = MyScore()
 cam = CameraControl()
-pcs = Pcserial()
+pcs = PcSerial()
 n=0
 game.start()
 height=score.heightscale(game.scoresheet,game.end)
