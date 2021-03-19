@@ -56,4 +56,4 @@ while(not game.end):
 cam.stop_pipline()
 pcs.set_height(255)
 pcs.set_led_state(60)
-playsound("gamelogic/play.wav")      
+#playsound("gamelogic/play.wav")

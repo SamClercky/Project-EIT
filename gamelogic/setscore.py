@@ -55,7 +55,7 @@ class MyScore():
             else:
                 array.append(int(((scoresheet.get(i)[1]/100)*175)+80))
 
-        print(array)
+
         return max(array)
 
     def lightscale(self,scoresheet: dict,end: bool):
@@ -66,6 +66,6 @@ class MyScore():
             else:
                 array.append(int(((scoresheet.get(i)[1]/100)*50))+10)
 
-        print(array)
+
         return array
                 
