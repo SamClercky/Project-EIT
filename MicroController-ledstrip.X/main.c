@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include "PI.h"
 #include "UART.h"
+#include "led.h"
 
 /*
                          Main application
@@ -53,6 +54,7 @@ void main(void) {
 
             PI();
             UARTCommunication();
+			LEDSTRIP_Draw_Frames();
             // NIET ONDER 60 GAAN
             //PWM5_LoadDutyValue((uint8_t) 120);
         }

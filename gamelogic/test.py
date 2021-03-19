@@ -9,3 +9,4 @@ score = MyScore()
 array=[100,651321,651321,4656]
 dictt={1 : ["anass",100]}
 test=[-10,-315]
+print(score.scale(array))

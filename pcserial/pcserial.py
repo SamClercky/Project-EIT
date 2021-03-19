@@ -12,11 +12,13 @@ class PcSerial:
     _port: serial.Serial
     _clickedBtns = 0
     _ledState = 0
+    _verbose = False
 
-    def __init__(self, port: str = None):
+    def __init__(self, port: str = None, verbose = False):
         # Setup
         open_ports = list(serial.tools.list_ports.comports())
         selected_port = None
+        self._verbose = verbose
 
         if port != None:
             selected_port = port
@@ -51,7 +53,7 @@ class PcSerial:
             self._writeToPort(b"B")
             clickedBtns = int(self._port.readline().rstrip())
             
-            needUpdate = (self._clickedBtns != 0 and
+            needUpdate = (self._clickedBtns != 0 or
                     self._clickedBtns != clickedBtns)
             self._clickedBtns = clickedBtns
 
@@ -83,7 +85,8 @@ class PcSerial:
         # Schrijf weg
         self._writeToPort(f"L{self._ledState}".encode("ascii"))
         self._port.readline() # Read echo
-        print(f"Writing to device: L{self._ledState}")
+        if self._verbose:
+            print(f"Writing to device: L{self._ledState}")
     
     def set_height(self, height: int):
         if self._port == None:
@@ -96,7 +99,8 @@ class PcSerial:
         self._writeToPort(f"S{height}".encode("ascii"))
         self._port.readline() # Read echo
 
-        print(f"Writing to device: S{height}")
+        if self._verbose:
+            print(f"Writing to device: S{height}")
         
     def _resetPort(self):
         if self._port == None:
@@ -109,7 +113,8 @@ class PcSerial:
             return
 
         data = b' ' + data + b'\r'
-        print(f"Writing to device: {data}")
+        if self._verbose:
+            print(f"Writing to device: {data}")
         self._port.write(data)
         self._port.flush()
 
