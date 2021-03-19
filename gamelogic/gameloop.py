@@ -27,7 +27,7 @@ while(not game.end):
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+" to throw.")
         
-        pcs.set_height(height[i-1])
+        pcs.set_height(height)
         pcs.set_led_state(light[i-1])
 
         with Listener(
