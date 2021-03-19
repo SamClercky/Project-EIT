@@ -64,8 +64,6 @@ class CameraControl():
 
         self.look_at_buttons = 0
 
-    pcs = PcSerial()
-
     green = [[0, 255, 0], "green"]
     blue = [[255, 0, 0],'blue']
 
@@ -535,11 +533,11 @@ class CameraControl():
             d.append(dx)
         return d
 
-    def run_code(self, wanted_state):
+    def run_code(self, wanted_state, pcsn):
         try:
             print(fg.li_cyan + "___________________________________________________________Camera___________________________________________________________")
             self.state.current_state = wanted_state
-
+            self.pcs = pcsn
             while self.state.current_state is "getting_target" :
 
                 frames = self.pipeline.wait_for_frames()
@@ -575,6 +573,7 @@ class CameraControl():
 
                 self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
+                cv2.imshow(("hsv_image", hsv_frame))
 
                 if self.look_at_buttons%20 == 0:
                     self.look_at_buttons = 0
