@@ -1,6 +1,5 @@
 class MyScore():
-    """The class function gets a list of players, which will be put in a dictionary with the keys representing the player numbers
-    or indexes and the value is a list with the first element the player name and the second one their score."""
+    """The class function will update the scoresheet, scale the outputs for the score and for the height of the ball."""
     def scale(self, array):
         newscore=[]
         for x in array:
@@ -47,7 +46,7 @@ class MyScore():
                 arrayscale.append(0)
         return arrayscale
     
-    def heightscale(self, scoresheet, end):
+    def heightscale(self, scoresheet,end):
         array=[]
     
         for i in range(1,len(scoresheet)+1):
@@ -59,4 +58,14 @@ class MyScore():
         print(array)
         return array
 
+    def lightscale(self,scoresheet,end):
+        array=[]
+        for i in range(1,len(scoresheet)+1):
+            if(end):
+                array.append(int(((scoresheet.get(i)[1]-100)/100)*80))
+            else:
+                array.append(int((scoresheet.get(i)[1]/100)*80))
+
+        print(array)
+        return array
                 

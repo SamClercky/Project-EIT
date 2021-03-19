@@ -17,6 +17,7 @@ pcs = PcSerial()
 n=0
 game.start()
 height=score.heightscale(game.scoresheet,game.end)
+light=score.lightscale(game.scoresheet,game.end)
 
 cam.run_code("getting_target",pcs)
 
@@ -25,13 +26,10 @@ while(not game.end):
     newscore=[]
     for i in range(1,len(game.scoresheet)+1):
         print(game.scoresheet.get(i)[0]+" to throw.")
-
-        for j in range(0,4):
-            pc.set_led_state(j,False)
-        pc.set_led_state((i-1)%4),True)
         
         pcs.set_height(height[i-1])
-        
+        pcs.set_led_state(light[i-1])
+
         with Listener(
             on_release=on_release) as listener:
                 listener.join()
@@ -58,4 +56,5 @@ while(not game.end):
         game.endstate(game.scoresheet)
 cam.stop_pipline()
 pcs.set_height(255)
+pcs.set_led_state(60)
 playsound("gamelogic/play.wav")      

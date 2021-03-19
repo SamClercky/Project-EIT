@@ -11,4 +11,4 @@ test=[-10,-315]
 score.update(dictt,score.scale(array))
 print(dictt)
 print(score.heightscale(dictt,True))
-print(0%4)
+print(4%4)
