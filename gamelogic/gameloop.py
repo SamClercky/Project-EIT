@@ -49,7 +49,6 @@ while(not game.end):
     
     print("\n\nScoreboard\n")
     for i in range(1,len(game.scoresheet)+1):
-        pcs.set_led()
         print(game.scoresheet.get(i)[0]+": "+str(game.scoresheet.get(i)[1])+"\n")
     n+=1
     if(n==2):
