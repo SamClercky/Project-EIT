@@ -62,6 +62,8 @@ class CameraControl():
         self.color_image = 0
         self.depth_image = 0
 
+        self.look_at_buttons = 0
+
     pcs = PcSerial()
 
     green = [[0, 255, 0], "green"]
@@ -78,17 +80,17 @@ class CameraControl():
                     , (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
         if(self.state.current_state is "getting_target"):
-            cv2.putText(self.color_image, "-press ' ' for finalising the target"
+            cv2.putText(self.color_image, "-press button '1' for finalising the target"
                         , (120, 20), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (255, 255, 255), 1, cv2.LINE_AA)
         else:
-            cv2.putText(self.color_image, "-press ' ' for getting score"
+            cv2.putText(self.color_image, "-press button'1' for getting score"
                         , (120, 20), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (255, 255, 255), 1, cv2.LINE_AA)
-        cv2.putText(self.color_image, "-press 'p' for plotting positions (positions aren't thrown away)"
+        cv2.putText(self.color_image, "-press button '2' for plotting positions (positions aren't thrown away)"
                     , (120, 35), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
-        cv2.putText(self.color_image, "-press 'f' pay respect and reset found points"
+        cv2.putText(self.color_image, "-press button '3' pay respect and reset found points"
                     , (120, 50), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
@@ -574,38 +576,42 @@ class CameraControl():
                 self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
 
-                #functie van andreas implementeren
-                #self.pcs.poll()
-                if cv2.waitKey(1) & 0xFF == ord(' '):
-                    if min(len(self.target_point1), len(self.target_point2), len(self.target_point3)) > 50:
-                        print("finalyzing_target")
-                        self.finalyzing_target()
-                        print("target points :")
-                        print(self.target_points)
+                if self.look_at_buttons%20 == 0:
+                    self.look_at_buttons = 0
+                    #cv2.waitKey(1) & 0xFF == ord(' ')
+                    if self.pcs.poll()and self.pcs.get_btn_state()[0]:
+                        if min(len(self.target_point1), len(self.target_point2), len(self.target_point3)) > 50:
+                            print("finalyzing_target")
+                            self.finalyzing_target()
+                            print("target points :")
+                            print(self.target_points)
+                            self.positions = []
+                            self.positions_on_color = []
+                            cv2.destroyAllWindows()
+                            break
+                        else:
+                            print("niet genoeg punten, rustig jong het komt goed nog even wachten # = " + str(min(len(self.target_point1), len(self.target_point2), len(self.target_point3))))
+                            #print("target point1 : " + str(self.target_point1))
+                            #print("target point2 : " + str(self.target_point2))
+                            #print("target point3 : " + str(self.target_point3))
+                            #print("total : " + str(self.target_points))
+                    if self.pcs.poll()and self.pcs.get_btn_state()[1]:
+                        if len(self.positions) != []:
+                            print("plotting positions")
+                            self.plot_poitions()
+                        else:
+                            print("not enough points to plot trow again")
+                    if self.pcs.poll()and self.pcs.get_btn_state()[2]:
+                        self.target_point1 = []
+                        self.target_point2 = []
+                        self.target_point3 = []
+                        self.target_points = [self.target_point1, self.target_point2, self.target_point3]
                         self.positions = []
                         self.positions_on_color = []
-                        cv2.destroyAllWindows()
-                        break
-                    else:
-                        print("niet genoeg punten, rustig jong het komt goed nog even wachten # = " + str(min(len(self.target_point1), len(self.target_point2), len(self.target_point3))))
-                        #print("target point1 : " + str(self.target_point1))
-                        #print("target point2 : " + str(self.target_point2))
-                        #print("target point3 : " + str(self.target_point3))
-                        #print("total : " + str(self.target_points))
-                if cv2.waitKey(1) & 0xFF == ord('p'):
-                    if len(self.positions) != []:
-                        print("plotting positions")
-                        self.plot_poitions()
-                    else:
-                        print("not enough points to plot trow again")
-                if cv2.waitKey(1) & 0xFF == ord('f'):
-                    self.target_point1 = []
-                    self.target_point2 = []
-                    self.target_point3 = []
-                    self.target_points = [self.target_point1, self.target_point2, self.target_point3]
-                    self.positions = []
-                    self.positions_on_color = []
-                    print("reset")
+                        print("reset")
+                else:
+                    self.look_at_buttons = self.look_at_buttons +1
+                cv2.waitKey(1)
 
             while self.state.current_state is "getting_data":
                 frames = self.pipeline.wait_for_frames()
@@ -645,31 +651,37 @@ class CameraControl():
                 self.draw_instructions()
                 cv2.imshow("Color Image", self.color_image)
 
-                #functie van andreas implementeren
-                if cv2.waitKey(1) & 0xFF == ord(' '):
-                    if len(self.positions) > 2 and any(i != [] for i in self.target_points):
-                        self.procces_data()
+                if self.look_at_buttons%20 == 0:
+                    self.look_at_buttons = 0
+                    #functie van andreas implementeren
+                    if self.pcs.poll()and self.pcs.get_btn_state()[0]:
+                        if len(self.positions) > 2 and any(i != [] for i in self.target_points):
+                            self.procces_data()
+                            self.positions = []
+                            self.positions_on_color = []
+                            cv2.destroyAllWindows()
+                            return self.get_distace_to_intersect()
+                        elif any(i == [] for i in self.target_points):
+                            print("er zijn geen target points gevonden")
+                        else:
+                            print("not enough points to procces trow again")
+                            print(self.positions)
+                            self.positions = []
+                            self.positions_on_color = []
+                    if self.pcs.poll()and self.pcs.get_btn_state()[1]:
+                        if len(self.positions) != []:
+                            print("plotting positions")
+                            self.plot_poitions()
+                        else:
+                            print("not enough points to plot trow again")
+                    if self.pcs.poll()and self.pcs.get_btn_state()[2]:
                         self.positions = []
                         self.positions_on_color = []
-                        cv2.destroyAllWindows()
-                        return self.get_distace_to_intersect()
-                    elif any(i == [] for i in self.target_points):
-                        print("er zijn geen target points gevonden")
-                    else:
-                        print("not enough points to procces trow again")
-                        print(self.positions)
-                        self.positions = []
-                        self.positions_on_color = []
-                if cv2.waitKey(1) & 0xFF == ord('p'):
-                    if len(self.positions) != []:
-                        print("plotting positions")
-                        self.plot_poitions()
-                    else:
-                        print("not enough points to plot trow again")
-                if cv2.waitKey(1) & 0xFF == ord('f'):
-                    self.positions = []
-                    self.positions_on_color = []
-                    print("reset")
+                        print("reset")
+                else:
+                    self.look_at_buttons = self.look_at_buttons +1
+                cv2.waitKey(1)
+
         finally:
             print("____________________________________________________________________________________________________________________________" + fg.rs)
 
